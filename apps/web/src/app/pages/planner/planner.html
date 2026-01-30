@@ -1,0 +1,22 @@
+<div class="card planner-card">
+  <h2>Heti tervező</h2>
+  <p class="muted">Generálj egy egyszerű heti poszttervet a profilod alapján.</p>
+
+  <button class="btn generate-btn" (click)="onGenerate()" [disabled]="loading">
+    Heti terv generálása
+  </button>
+
+  <p *ngIf="loading" class="muted loading-text">Generálok…</p>
+  <p *ngIf="error" class="error error-text">{{ error }}</p>
+
+  <!-- Tervlista konténer -->
+  <!-- Eltávolítva az in-line style="margin-top:12px;" -->
+  <div *ngIf="plan.length > 0" class="plan-list">
+    <!-- Eltávolítva az in-line style="margin-top:10px;" -->
+    <div *ngFor="let it of plan" class="card plan-item">
+      <strong>{{ it.day }}</strong>
+      <!-- Eltávolítva az in-line style="margin-top:6px;" -->
+      <div class="plan-text">{{ it.text }}</div>
+    </div>
+  </div>
+</div>

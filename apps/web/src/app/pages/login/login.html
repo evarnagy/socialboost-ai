@@ -1,0 +1,18 @@
+<div class="card login-card">
+  <h2>Belépés</h2>
+  <p class="muted">Jelentkezz be, vagy hozz létre fiókot.</p>
+
+  <!-- In-line stílusok eltávolítva, 'login-form' osztály hozzáadva -->
+  <div class="login-form">
+    <input class="input" [(ngModel)]="email" placeholder="Email" />
+    <input class="input" [(ngModel)]="password" placeholder="Jelszó" type="password" />
+
+    <!-- 'row' helyett 'form-actions' -->
+    <div class="form-actions">
+      <button class="btn primary-action" (click)="onLogin()" [disabled]="loading">Belépés</button>
+      <button class="btn secondary" (click)="onRegister()" [disabled]="loading">Regisztráció</button>
+    </div>
+
+    <p *ngIf="error" class="error login-error">{{ error }}</p>
+  </div>
+</div>

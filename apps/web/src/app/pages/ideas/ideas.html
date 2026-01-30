@@ -1,0 +1,121 @@
+<!-- BETÖLTÉS -->
+<div *ngIf="!profileLoaded" class="card">
+  <h2>Posztötletek</h2>
+  <p class="muted">Profil betöltése…</p>
+</div>
+
+<!-- NINCS PROFIL -->
+<div *ngIf="profileLoaded && !hasProfile" class="card">
+  <h2>Nincs üzletprofilod</h2>
+  <p class="muted">
+    Először hozd létre az üzletprofilod, hogy személyre szabott posztötleteket kapj.
+  </p>
+
+  <button class="btn" (click)="goOnboarding()">
+    Hozd létre az üzletprofilod
+  </button>
+
+  <p *ngIf="error" class="error" style="margin-top:10px;">
+    {{ error }}
+  </p>
+</div>
+
+<!-- VAN PROFIL -->
+<div *ngIf="profileLoaded && hasProfile" class="card ideas">
+  <h2>Posztötletek</h2>
+  <p class="muted">
+    A profilod alapján generálunk gyors ötleteket és konkrét posztot.
+  </p>
+
+  <div class="form">
+    <input
+      class="input"
+      [(ngModel)]="industry"
+      placeholder="Üzletág"
+    />
+
+    <input
+      class="input"
+      [(ngModel)]="targetAudience"
+      placeholder="Célközönség"
+    />
+
+    <!-- Átnevezve 'form-row'-ra -->
+    <div class="form-row"> 
+      <select class="input" [(ngModel)]="tone">
+        <option value="friendly">Barátságos</option>
+        <option value="expert">Szakértői</option>
+        <option value="premium">Prémium</option>
+      </select>
+
+      <button class="btn secondary" (click)="onGeneratePost()">
+        Konkrét poszt
+      </button>
+    </div>
+
+    <!-- Hozzáadva a 'primary-action' osztály -->
+    <button
+      class="btn primary-action" 
+      (click)="onGenerate()"
+      [disabled]="loading || !industry || !targetAudience"
+    >
+      Ötletek generálása
+    </button>
+  </div>
+
+  <!-- Hozzáadva loading-text/error-text osztályok, in-line style eltávolítva -->
+  <p *ngIf="loading" class="muted loading-text">Generálok…</p>
+  <p *ngIf="error" class="error error-text">{{ error }}</p>
+</div>
+
+
+<!-- KONKRÉT POSZT -->
+<div *ngIf="post" class="card post-result">
+  <div class="post-section">
+    <strong>Horogszöveg:</strong>
+    <p>{{ post.hook }}</p>
+  </div>
+
+  <div class="post-section">
+    <strong>Felirat:</strong>
+    <p>{{ post.caption }}</p>
+  </div>
+
+  <div class="post-section">
+    <strong>CTA:</strong>
+    <button class="btn secondary">
+      {{ post.cta }}
+    </button>
+  </div>
+
+  <div class="post-section hashtags">
+    <strong>Hashtagek:</strong>
+    <div>
+      <span *ngFor="let h of post.hashtags" class="hashtag-tag">
+        #{{ h }}
+      </span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ÖTLETEK LISTA -->
+<div *ngIf="ideas.length > 0" class="card ideas-list-container">
+  <h3>Ötletek</h3>
+
+  <p *ngIf="toast" class="muted">{{ toast }}</p>
+
+  <ul class="ideas-list">
+    <li *ngFor="let idea of ideas" class="idea-item">
+      <div class="idea-text">{{ idea.text }}</div>
+
+      <button
+        class="btn secondary save-btn"
+        (click)="saveFavorite(idea.text)"
+      >
+        Mentés kedvencek közé
+      </button>
+    </li>
+  </ul>
+</div>
+

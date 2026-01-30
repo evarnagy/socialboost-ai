@@ -1,0 +1,19 @@
+.profile-card {
+  padding: 18px; /* Hozzáadunk egy kis belső margót a kártyához */
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* A beviteli mezők és a gomb közötti egységes térköz */
+  margin-top: 16px; /* Hely a leírás és az űrlap között */
+}
+
+.save-btn {
+  margin-top: 8px; /* Kicsit több hely a gomb felett */
+}
+
+/* A hibaüzenet stílusa, ha szükséges */
+.error {
+  margin-top: 8px;
+}

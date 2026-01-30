@@ -1,0 +1,54 @@
+<div class="library">
+
+  <!-- FEJLÉC -->
+  <div class="libraryHeader">
+    <div>
+      <h2>Könyvtár</h2>
+      <p class="muted">
+        Elmentett posztötleteid és inspirációk egy helyen.
+      </p>
+    </div>
+  </div>
+
+  <!-- ÁLLAPOTOK -->
+  <div *ngIf="loading" class="card muted">
+    Betöltés…
+  </div>
+
+  <div *ngIf="error" class="card error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && items.length === 0" class="card empty">
+    <div class="emptyIcon">📂</div>
+    <h3>Még üres a könyvtár</h3>
+    <p class="muted">
+      A mentett posztötletek itt fognak megjelenni.
+    </p>
+  </div>
+
+  <!-- KÁRTYÁS GRID -->
+  <div *ngIf="items.length > 0" class="grid">
+   <div *ngFor="let it of items" class="card libraryItem">
+  <div class="itemBadge">Mentett ötlet</div>
+
+  <p class="itemText">
+    {{ it.text }}
+  </p>
+
+  <div class="itemFooter">
+    <span class="muted">Library</span>
+
+    <button
+      class="btn secondary danger"
+      (click)="onDelete(it.id)"
+      [disabled]="deletingId === it.id"
+    >
+      {{ deletingId === it.id ? 'Törlöm…' : 'Törlés' }}
+    </button>
+  </div>
+</div>
+
+  </div>
+
+</div>
