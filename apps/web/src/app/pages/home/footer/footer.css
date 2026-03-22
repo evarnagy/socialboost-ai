@@ -1,0 +1,22 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 12px 6px;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 12px;
+}
+
+.footerLinks a {
+  text-decoration: none;
+  color: #6b7280;
+}
+
+.footerLinks a:hover {
+  color: #111827;
+}

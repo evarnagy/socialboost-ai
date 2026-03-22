@@ -1,0 +1,83 @@
+.mock {
+  overflow: hidden;
+}
+
+.mockTop {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.d1 { background: #f3f4f6; }
+.d2 { background: #e5e7eb; }
+.d3 { background: #d1d5db; }
+
+.mockTopTitle {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.mockBody {
+  padding: 14px;
+}
+
+.mockTitle {
+  font-weight: 750;
+  margin-bottom: 10px;
+}
+
+.mockHook {
+  font-weight: 850;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.mockCaption {
+  line-height: 1.5;
+}
+
+.mockCta {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px dashed #e5e7eb;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.mini {
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.mockTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.tag {
+  padding: 6px 10px;
+  border: 1px solid #eee;
+  border-radius: 999px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.mockMeta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-size: 12px;
+}

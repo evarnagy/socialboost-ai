@@ -1,0 +1,9 @@
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trustIcon {
+  font-size: 14px;
+}

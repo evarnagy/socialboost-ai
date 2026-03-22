@@ -1,0 +1,27 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.stepNumber {
+  font-size: 18px;
+  font-weight: bold;
+  color: #0b0b0d;
+  margin-bottom: 4px;
+}
+
+.step h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0b0b0d;
+}
+
+.step p {
+  margin: 0;
+  color: #6b7280;
+}

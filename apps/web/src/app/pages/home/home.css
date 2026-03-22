@@ -69,67 +69,12 @@ h1{
 .spark{ font-size: 14px; }
 .dotSep{ color:#d1d5db; }
 
-.ctaRow{
-  display:flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  text-decoration:none;
-  color:#111827;
-  background:#fff;
-  font-weight: 650;
-  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-}
-
-.btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0,0,0,.08);
-}
-
-.btn.primary{
-  background:#0b0b0d;
-  color:#fff;
-  border-color:#0b0b0d;
-}
-
-.btn.ghost{
-  background: rgba(255,255,255,.7);
-}
-
-.btn.subtle{
-  background:#f9fafb;
-}
-
-/* ---------- stats ---------- */
+/* ---------- stats container ---------- */
 .stats{
   display:flex;
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 14px;
-}
-
-.stat{
-  padding: 11px 12px;
-  border: 1px solid #eee;
-  border-radius: 14px;
-  background: #fff;
-  min-width: 170px;
-}
-
-.statNum{
-  font-weight: 850;
-  font-size: 18px;
-  letter-spacing: -0.01em;
 }
 
 /* ---------- trust row ---------- */
@@ -141,14 +86,6 @@ h1{
   padding-top: 10px;
   border-top: 1px solid #f0f0f0;
 }
-
-.trustItem{
-  display:flex;
-  align-items:center;
-  gap: 8px;
-}
-
-.trustIcon{ font-size: 14px; }
 
 /* ---------- mock ---------- */
 .mock{
@@ -218,46 +155,12 @@ h1{
   font-size: 12px;
 }
 
-.sideCard{
-  padding: 14px;
-}
-.sideTitle{
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-.sideList{ display:grid; gap: 8px; }
-.sideRow{
-  display:flex;
-  gap: 10px;
-  align-items:flex-start;
-  line-height: 1.4;
-}
-.ok{
-  width: 20px;
-  height: 20px;
-  border-radius: 8px;
-  background:#0b0b0d;
-  color:#fff;
-  display:grid;
-  place-items:center;
-  font-size: 12px;
-  margin-top: 1px;
-}
-
-
+/* ---------- how section ---------- */
 .grid3{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-top: 14px;
-}
-
-.feature{
-  padding: 14px;
-}
-.featureIcon{
-  font-size: 22px;
-  margin-bottom: 8px;
 }
 
 
@@ -266,45 +169,14 @@ h1{
   padding: 16px;
 }
 
-.howHead{
-  display:flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
-}
-
+/* ---------- how steps container ---------- */
 .howSteps{
   display:grid;
   gap: 10px;
   margin-top: 10px;
 }
 
-.step{
-  display:flex;
-  gap: 10px;
-  align-items:flex-start;
-  padding: 10px 10px;
-  border: 1px solid #f0f0f0;
-  border-radius: 14px;
-  background: #fff;
-}
-
-.stepNum{
-  width: 30px;
-  height: 30px;
-  border-radius: 12px;
-  border: 1px solid #eee;
-  background:#f9fafb;
-  display:grid;
-  place-items:center;
-  font-weight: 850;
-}
-
-.stepTitle{ font-weight: 750; }
-
-.bottomCtas{ margin-top: 14px; }
-
-
+/* ---------- footer ---------- */
 .footer{
   display:flex;
   justify-content: space-between;

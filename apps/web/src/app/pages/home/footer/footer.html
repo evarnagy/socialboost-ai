@@ -1,0 +1,6 @@
+<footer class="footer muted">
+  <div>{{ data.copyright }}</div>
+  <div class="footerLinks">
+    <a *ngFor="let link of data.links" [routerLink]="link.route">{{ link.text }}</a>
+  </div>
+</footer>

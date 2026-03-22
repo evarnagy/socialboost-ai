@@ -1,0 +1,40 @@
+.ctaRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  color: #111827;
+  background: #fff;
+  font-weight: 650;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0,0,0,.08);
+}
+
+.btn.primary {
+  background: #0b0b0d;
+  color: #fff;
+  border-color: #0b0b0d;
+}
+
+.btn.ghost {
+  background: rgba(255,255,255,.7);
+}
+
+.btn.subtle {
+  background: #f9fafb;
+}

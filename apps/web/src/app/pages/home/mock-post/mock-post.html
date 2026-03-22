@@ -1,0 +1,26 @@
+<div class="card mock" *ngIf="data">
+  <div class="mockTop">
+    <div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div>
+    <div class="mockTopTitle muted">{{ previewLabel }}</div>
+  </div>
+
+  <div class="mockBody">
+    <div class="mockTitle">{{ data.title }}</div>
+
+    <div class="mockHook">{{ data.hook }}</div>
+    <div class="mockCaption muted">{{ data.caption }}</div>
+
+    <div class="mockCta">
+      <div class="muted mini">CTA</div>
+      <div>{{ data.cta }}</div>
+    </div>
+
+    <div class="mockTags">
+      <span class="tag" *ngFor="let tag of data.tags">{{ tag }}</span>
+    </div>
+
+    <div class="mockMeta muted">
+      <span *ngFor="let item of data.meta">• {{ item }}</span>
+    </div>
+  </div>
+</div>

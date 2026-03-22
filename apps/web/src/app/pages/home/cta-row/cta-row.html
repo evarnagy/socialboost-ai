@@ -1,0 +1,18 @@
+<div class="ctaRow">
+  <ng-container *ngFor="let button of buttons">
+    <button
+      *ngIf="button.isClick"
+      class="btn {{ button.type }}"
+      (click)="onClick(button)"
+    >
+      {{ button.text }}
+    </button>
+    <a
+      *ngIf="!button.isClick"
+      class="btn {{ button.type }}"
+      [routerLink]="button.link"
+    >
+      {{ button.text }}
+    </a>
+  </ng-container>
+</div>

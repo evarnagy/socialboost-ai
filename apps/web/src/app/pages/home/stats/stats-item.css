@@ -1,0 +1,13 @@
+.stat {
+  padding: 11px 12px;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  background: #fff;
+  min-width: 170px;
+}
+
+.statNum {
+  font-weight: 850;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
