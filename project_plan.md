@@ -2,7 +2,7 @@
 
 ## Egy mondatos értékajánlat
 
-AI-alapú posztötlet és strukturált tartalom generátor vállalkozóknak, amely személyre szabott hook-okat, caption-eket és hashtageket készít Firebase autentikációval, heti tervezővel és könyvtárral, közösségi öltetplatformmal, megkönnyítve a közösségi média tartalomkészítést kezdő vállalkozók számára.
+AI-alapú posztötlet és strukturált tartalom generátor vállalkozóknak, amely személyre szabott hook-okat, caption-eket és hashtageket és konkrét posztötleteket készít Firebase autentikációval, heti tervezővel és könyvtárral, közösségi öltetplatformmal, megkönnyítve a közösségi média tartalomkészítést kezdő vállalkozók számára.
 
 ## Képességek
 
