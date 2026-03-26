@@ -9,7 +9,7 @@ AI-alapú posztötlet és strukturált tartalom generátor vállalkozóknak, ame
 | Képesség | Kategória | Komplexitás | Miért nem triviális? |
 |---|---|---|---|
 | Bejelentkezés és szerepkörök | Productization | M | Firebase Auth refresh token kezelése + role-based route védelem Angular Guard-okkal |
-| AI-alapú poszt generálás | Value | L | OpenAI API integráció, prompt engineering, válasz parsing és formázás |
+| AI-alapú poszt generálás | Value | L | OpenAI API integráció,heavy prompt engineering, válasz parsing és formázás |
 | Ötletek könyvtára és kedvencek | Value | M | Firebase Firestore adatbázis, real-time sync, keresés és szűrés |
 | Heti tervező (planner) | Value | L | Komplex ütemezés logika, drag-and-drop UI, helyi tárolás offline módhoz |
 | Hibaállapot kezelése | Productization | M | Retry logika API hívásoknál + felhasználóbarát toast üzenetek |
