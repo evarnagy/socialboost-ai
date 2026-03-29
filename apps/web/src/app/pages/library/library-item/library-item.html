@@ -1,0 +1,16 @@
+<div class="card libraryItem">
+  <div class="itemBadge">Mentett ötlet</div>
+  <p class="itemText">
+    {{ item.text }}
+  </p>
+  <div class="itemFooter">
+    <span class="muted">Library</span>
+    <button
+      class="btn secondary danger"
+      (click)="onDelete()"
+      [disabled]="deletingId === item.id"
+    >
+      {{ deletingId === item.id ? 'Törlöm…' : 'Törlés' }}
+    </button>
+  </div>
+</div>

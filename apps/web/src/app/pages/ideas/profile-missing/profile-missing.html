@@ -1,0 +1,12 @@
+<div class="profile-missing">
+  <h2>{{ data.title }}</h2>
+  <p class="muted">{{ data.description }}</p>
+
+  <button class="btn primary" (click)="onClick()">
+    {{ data.buttonText }}
+  </button>
+
+  <p *ngIf="error" class="error" style="margin-top: 10px;">
+    {{ error }}
+  </p>
+</div>

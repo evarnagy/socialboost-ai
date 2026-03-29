@@ -1,0 +1,27 @@
+<div *ngIf="post" class="post-result">
+  <div class="post-section">
+    <strong>Horogszöveg:</strong>
+    <p>{{ post.hook }}</p>
+  </div>
+
+  <div class="post-section">
+    <strong>Felirat:</strong>
+    <p>{{ post.caption }}</p>
+  </div>
+
+  <div class="post-section">
+    <strong>CTA:</strong>
+    <button class="btn secondary">
+      {{ post.cta }}
+    </button>
+  </div>
+
+  <div class="post-section hashtags">
+    <strong>Hashtagek:</strong>
+    <div>
+      <span *ngFor="let h of post.hashtags" class="hashtag-tag">
+        #{{ h }}
+      </span>
+    </div>
+  </div>
+</div>

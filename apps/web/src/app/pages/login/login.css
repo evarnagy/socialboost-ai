@@ -1,36 +1,5 @@
 .login-card {
-  padding: 18px; /* Belső margó a kártya tartalmának */
-  max-width: 400px; /* Limitáljuk a szélességet, hogy jól nézzen ki nagy képernyőn */
-  margin: 40px auto; /* Középre igazítás az oldalon, ha nincs flex containerben */
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px; /* Térköz a beviteli mezők és a gombok között */
-  margin-top: 16px; /* Hely a leírás és az űrlap között */
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px; /* Térköz a Belépés és Regisztráció gombok között */
-  margin-top: 8px; /* Hely az űrlap felett */
-}
-
-/* Hogy a gombok egyenletes szélességűek legyenek */
-.form-actions .btn {
-  flex: 1; 
-}
-
-.primary-action {
-  background: var(--brand-dark);
-  color: #fff;
-}
-
-.primary-action:hover {
-  background: var(--brand-hover);
-}
-
-.login-error {
-  margin-top: 10px;
+  padding: 18px;
+  max-width: 400px;
+  margin: 40px auto;
 }

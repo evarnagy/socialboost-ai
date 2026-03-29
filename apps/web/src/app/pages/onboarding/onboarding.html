@@ -1,16 +1,12 @@
 <div class="card profile-card">
-  <h2>Üzletprofil</h2>
-  <p class="muted">Ezek alapján kapsz személyre szabott posztötleteket.</p>
-
-  <!-- In-line stílusok eltávolítva, 'profile-form' osztály hozzáadva -->
-  <div class="profile-form">
-    <input class="input" [(ngModel)]="industry" placeholder="Üzletág (pl. kozmetika, fotós)" />
-    <input class="input" [(ngModel)]="targetAudience" placeholder="Célközönség (pl. 25-45 nők, Szeged)" />
-
-    <button class="btn save-btn" (click)="onSave()" [disabled]="loading || !industry || !targetAudience">
-      Mentés
-    </button>
-
-    <p *ngIf="error" class="error">{{ error }}</p>
-  </div>
+  <app-onboarding-header [data]="headerData"></app-onboarding-header>
+  <app-onboarding-form
+    [industry]="industry"
+    [targetAudience]="targetAudience"
+    [loading]="loading"
+    [error]="error"
+    (industryChange)="industry = $event"
+    (audienceChange)="targetAudience = $event"
+    (save)="onSave()"
+  ></app-onboarding-form>
 </div>

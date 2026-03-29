@@ -1,0 +1,11 @@
+<div class="login-form">
+  <input class="input" [ngModel]="email" (ngModelChange)="emailChange.emit($event)" placeholder="Email" />
+  <input class="input" [ngModel]="password" (ngModelChange)="passwordChange.emit($event)" placeholder="Jelszó" type="password" />
+
+  <div class="form-actions">
+    <button class="btn primary-action" (click)="login.emit()" [disabled]="loading">Belépés</button>
+    <button class="btn secondary" (click)="register.emit()" [disabled]="loading">Regisztráció</button>
+  </div>
+
+  <p *ngIf="error" class="error login-error">{{ error }}</p>
+</div>

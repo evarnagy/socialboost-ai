@@ -3,16 +3,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FavoritesService } from '../../services/favorites.service';
-import { StructuredPost } from './ideas.service';
-
-
-import { IdeasService, Idea } from './ideas.service';
+import { StructuredPost, IdeasService, Idea } from './ideas.service';
 import { ProfileService, BusinessProfile } from '../../services/profile.service';
+import { IdeasHeader } from './ideas-header/ideas-header';
+import { ProfileMissing } from './profile-missing/profile-missing';
+import { IdeaForm } from './idea-form/idea-form';
+import { PostResult } from './post-result/post-result';
+import { IDEAS_HEADER } from './ideas-header/ideas-header-data';
+import { PROFILE_MISSING } from './profile-missing/profile-missing-data';
+import { ToneType } from './idea-form/idea-form-data';
 
 @Component({
   selector: 'app-ideas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IdeasHeader, ProfileMissing, IdeaForm, PostResult],
   templateUrl: './ideas.html',
   styleUrl: './ideas.css',
 })
@@ -21,9 +25,13 @@ export class Ideas {
   profileLoaded = false;
   hasProfile = false;
 
+  // Data
+  ideasHeaderData = IDEAS_HEADER;
+  profileMissingData = PROFILE_MISSING;
+
   //State változók
   post: StructuredPost | null = null;
-  tone: 'friendly' | 'expert' | 'premium' = 'friendly';
+  tone: ToneType = 'friendly';
 
   // Form mezők
   industry = '';

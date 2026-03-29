@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProfileService } from '../../services/profile.service';
-import { ChangeDetectorRef } from '@angular/core';
+import { OnboardingHeader } from './onboarding-header/onboarding-header';
+import { ONBOARDING_HEADER } from './onboarding-header/onboarding-header-data';
+import { OnboardingForm } from './onboarding-form/onboarding-form';
 
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [OnboardingHeader, OnboardingForm],
   templateUrl: './onboarding.html',
   styleUrl: './onboarding.css',
 })
@@ -17,6 +17,7 @@ export class Onboarding {
   targetAudience = '';
   loading = false;
   error = '';
+  headerData = ONBOARDING_HEADER;
 
   constructor(private profile: ProfileService, private router: Router,  private cdr: ChangeDetectorRef) {}
 

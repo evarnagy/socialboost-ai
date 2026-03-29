@@ -1,0 +1,8 @@
+.generate-btn {
+  margin-top: 12px;
+  width: auto;
+}
+
+.loading-text, .error-text {
+  margin-top: 10px;
+}

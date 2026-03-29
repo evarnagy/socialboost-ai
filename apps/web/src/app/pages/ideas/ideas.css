@@ -1,115 +1,51 @@
-/* Meglévő stílusok megtartása... */
-.ideas{
+/* Ideas page styles */
+.ideas {
   padding: 18px;
 }
 
-.form{
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 12px;
-}
-/* ... */
-
-/* Új stílusok a poszt eredményhez */
-.post-result {
-  padding: 18px;
-  border-left: 5px solid #007bff; /* Kiemelés színnel */
+.card {
+  border: 1px solid #eee;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
-.post-section {
-  margin-bottom: 12px;
+.muted {
+  color: #6b7280;
 }
 
-.post-section p {
-  margin-top: 4px;
-  margin-bottom: 0;
-  color: #333;
+.error {
+  color: #dc2626;
 }
 
-.post-section strong {
-  display: block; /* A címkék külön sorba kerülnek */
-  color: #000;
-  margin-bottom: 4px;
-}
-
-.hashtag-tag {
-  display: inline-block;
-  background-color: #e9ecef;
-  color: #495057;
-  padding: 4px 8px;
-  border-radius: 12px;
-  margin-right: 6px;
-  margin-top: 4px;
-  font-size: 0.8em;
-}
-
-.post-section.hashtags div {
-  margin-top: 6px;
-}
-.ideas-list-container {
-  padding: 18px;
-}
-
-.ideas-list {
-  list-style-type: none; /* Eltávolítjuk az alapértelmezett listajeleket */
-  padding: 0;
-  margin: 0;
-}
-
-.idea-item {
-  background-color: #f8f9fa; /* Enyhe háttérszín a kiemeléshez */
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 12px; /* Térköz az elemek között */
-  border: 1px solid #e9ecef;
-}
-
-.idea-text {
-  color: #333;
-  margin-bottom: 10px; /* Térköz a gomb felett */
-}
-
-.save-btn {
-  width: 100%; /* A gomb teljes szélességű lesz a jobb kattinthatóságért */
-  box-sizing: border-box; /* A padding beleszámít a szélességbe */
-}
-
-.ideas{
-  padding: 18px;
-}
-
-.form{
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 12px;
-}
-/* ... */
-
-/* ÚJ: Stílus a "Szakértői szint" és "Konkrét poszt" sorhoz */
-.form-row {
-  display: flex;
-  gap: 12px; /* Térköz a select és a gomb között */
+.btn {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  color: #111827;
+  background: #fff;
+  font-weight: 650;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  cursor: pointer;
 }
 
-.form-row .input {
-  flex-grow: 1; /* A select kitölti a rendelkezésre álló helyet */
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
 }
 
-/* ÚJ: Stílus a fő "Ötletek generálása" gombhoz */
-.primary-action {
-  /* Kihasználjuk a globális változókat a konzisztencia érdekében */
-  background: var(--brand-dark); 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn.primary {
+  background: #0b0b0d;
   color: #fff;
-}
-
-.primary-action:hover {
-  background: var(--brand-hover);
-}
-
-/* Hiba/betöltés szövegek stílusa, hogy ne legyenek in-line stílusok */
-.loading-text, .error-text {
-  margin-top: 10px;
+  border-color: #0b0b0d;
 }

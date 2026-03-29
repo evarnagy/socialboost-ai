@@ -1,0 +1,14 @@
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.save-btn {
+  margin-top: 8px;
+}
+
+.error {
+  margin-top: 8px;
+}

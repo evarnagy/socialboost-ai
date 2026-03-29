@@ -1,0 +1,8 @@
+<div class="grid">
+  <library-item
+    *ngFor="let it of items"
+    [item]="it"
+    [deletingId]="deletingId"
+    (delete)="delete.emit($event)"
+  ></library-item>
+</div>

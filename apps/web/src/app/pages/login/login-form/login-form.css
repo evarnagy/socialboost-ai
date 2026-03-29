@@ -1,0 +1,29 @@
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+.primary-action {
+  background: var(--brand-dark);
+  color: #fff;
+}
+
+.primary-action:hover {
+  background: var(--brand-hover);
+}
+
+.login-error {
+  margin-top: 10px;
+}

@@ -1,0 +1,16 @@
+.plan-item {
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+}
+
+.plan-item strong {
+  color: var(--text-muted);
+  display: block;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 6px;
+}
+
+.plan-text {
+  margin-top: 6px;
+  color: var(--text-main);
+}

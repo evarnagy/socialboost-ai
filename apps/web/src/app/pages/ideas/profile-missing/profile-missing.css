@@ -1,0 +1,13 @@
+.profile-missing {
+  padding: 18px;
+}
+
+.profile-missing h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #0b0b0d;
+}
+
+.profile-missing p {
+  margin: 0 0 12px 0;
+}

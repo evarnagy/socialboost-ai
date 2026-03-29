@@ -1,0 +1,49 @@
+.libraryItem{
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.libraryItem:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(15,23,42,.08);
+}
+
+.itemBadge{
+  align-self: flex-start;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(59,130,246,.10);
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.itemText{
+  margin: 10px 0 0 0;
+  line-height: 1.35;
+}
+
+.itemFooter{
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn.danger{
+  background: #fff1f2;
+  color: #b00020;
+  border: 1px solid rgba(176,0,32,0.15);
+  padding: 8px 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.btn.danger:hover{
+  filter: brightness(0.98);
+}
+

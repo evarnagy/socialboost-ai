@@ -1,0 +1,6 @@
+<button class="btn generate-btn" (click)="generate.emit()" [disabled]="loading">
+  Heti terv generálása
+</button>
+
+<p *ngIf="loading" class="muted loading-text">Generálok…</p>
+<p *ngIf="error" class="error error-text">{{ error }}</p>

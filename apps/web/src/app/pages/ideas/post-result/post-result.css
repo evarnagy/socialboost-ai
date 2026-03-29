@@ -1,0 +1,49 @@
+.post-result {
+  padding: 18px;
+  border-left: 5px solid #007bff;
+}
+
+.post-section {
+  margin-bottom: 12px;
+}
+
+.post-section p {
+  margin-top: 4px;
+  margin-bottom: 0;
+  color: #333;
+}
+
+.post-section strong {
+  display: block;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+.hashtag-tag {
+  display: inline-block;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-right: 6px;
+  margin-top: 4px;
+  font-size: 0.8em;
+}
+
+.post-section.hashtags div {
+  margin-top: 6px;
+}
+
+.btn {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn.secondary {
+  background: rgba(255, 255, 255, 0.7);
+}

@@ -1,3 +1,4 @@
+/* Library main container */
 .library{
   display: flex;
   flex-direction: column;
@@ -22,68 +23,4 @@
   margin-bottom: 8px;
 }
 
-/* Grid */
-.grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: stretch;
-}
-@media (max-width: 900px){
-  .grid{ grid-template-columns: 1fr; }
-}
 
-/* Item card */
-.libraryItem{
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;            /* állítható */
-  transition: transform .12s ease, box-shadow .12s ease;
-}
-.libraryItem:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(15,23,42,.08);
-}
-
-/* Badge */
-.itemBadge{
-  align-self: flex-start;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(59,130,246,.10);
-  color: #2563eb;
-  font-weight: 600;
-}
-
-/* Text */
-.itemText{
-  margin: 10px 0 0 0;
-  line-height: 1.35;
-}
-
-/* Footer: mindig az aljára */
-.itemFooter{
-  margin-top: auto;             /* EZ nyomja le */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-
-  padding-top: 12px;
-  border-top: 1px solid rgba(0,0,0,0.06);
-}
-
-/* Button */
-.btn.danger{
-  background: #fff1f2;
-  color: #b00020;
-  border: 1px solid rgba(176,0,32,0.15);
-  padding: 8px 12px;
-  border-radius: 12px;
-  white-space: nowrap;
-}
-.btn.danger:hover{
-  filter: brightness(0.98);
-}
