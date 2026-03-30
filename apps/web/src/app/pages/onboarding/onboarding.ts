@@ -1,6 +1,11 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ProfileService } from '../../services/profile.service';
+import {
+  ProfileService,
+  SocialPlatform,
+  ContentGoal,
+  BrandTone,
+} from '../../services/profile.service';
 import { OnboardingHeader } from './onboarding-header/onboarding-header';
 import { ONBOARDING_HEADER } from './onboarding-header/onboarding-header-data';
 import { OnboardingForm } from './onboarding-form/onboarding-form';
@@ -15,6 +20,11 @@ import { OnboardingForm } from './onboarding-form/onboarding-form';
 export class Onboarding {
   industry = '';
   targetAudience = '';
+  location = '';
+  ageRange = '';
+  preferredPlatform: SocialPlatform = 'instagram';
+  contentGoal: ContentGoal = 'engagement';
+  brandTone: BrandTone = 'friendly';
   loading = false;
   error = '';
   headerData = ONBOARDING_HEADER;
@@ -26,6 +36,11 @@ export class Onboarding {
     if (existing) {
       this.industry = existing.industry ?? '';
       this.targetAudience = existing.targetAudience ?? '';
+      this.location = existing.location ?? '';
+      this.ageRange = existing.ageRange ?? '';
+      this.preferredPlatform = existing.preferredPlatform ?? 'instagram';
+      this.contentGoal = existing.contentGoal ?? 'engagement';
+      this.brandTone = existing.brandTone ?? 'friendly';
       this.cdr.detectChanges();
       // ha nem akarod, hogy újra lássa onboardingot:
       // await this.router.navigateByUrl('/ideas');
@@ -36,7 +51,15 @@ export class Onboarding {
     this.error = '';
     this.loading = true;
     try {
-      await this.profile.saveProfile(this.industry.trim(), this.targetAudience.trim());
+      await this.profile.saveProfile({
+        industry: this.industry.trim(),
+        targetAudience: this.targetAudience.trim(),
+        location: this.location.trim(),
+        ageRange: this.ageRange.trim(),
+        preferredPlatform: this.preferredPlatform,
+        contentGoal: this.contentGoal,
+        brandTone: this.brandTone,
+      });
       await this.router.navigateByUrl('/ideas');
     } catch (e: any) {
       this.error = e?.message ?? 'Mentési hiba';

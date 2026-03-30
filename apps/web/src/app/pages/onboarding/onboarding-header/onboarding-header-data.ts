@@ -5,5 +5,5 @@ export interface OnboardingHeaderData {
 
 export const ONBOARDING_HEADER: OnboardingHeaderData = {
   title: 'Üzletprofil',
-  description: 'Ezek alapján kapsz személyre szabott posztötleteket.'
+  description: 'Állítsd be az üzletadatokat, platformot és márkahangot a személyre szabott ötletekhez.'
 };

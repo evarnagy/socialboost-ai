@@ -1,10 +1,103 @@
 <div class="profile-form">
-  <input class="input" [ngModel]="industry" (ngModelChange)="industryChange.emit($event)" placeholder="Üzletág (pl. kozmetika, fotós)" />
-  <input class="input" [ngModel]="targetAudience" (ngModelChange)="audienceChange.emit($event)" placeholder="Célközönség (pl. 25-45 nők, Szeged)" />
+  <div class="wizard-meta">
+    <span class="step-chip">Lépés {{ currentStep }} / {{ totalSteps }}</span>
+    <div class="progress-track" aria-hidden="true">
+      <span class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></span>
+    </div>
+  </div>
 
-  <button class="btn save-btn" (click)="save.emit()" [disabled]="loading || !industry || !targetAudience">
-    Mentés
-  </button>
+  <div *ngIf="currentStep === 1" class="step-body">
+    <h3>Alapok</h3>
+    <input
+      class="input"
+      [ngModel]="industry"
+      (ngModelChange)="industryChange.emit($event)"
+      placeholder="Üzletág (pl. kozmetika, fotós)"
+    />
+    <input
+      class="input"
+      [ngModel]="targetAudience"
+      (ngModelChange)="audienceChange.emit($event)"
+      placeholder="Konkrét téma vagy célközönség (pl. fiatal anyukák, divat iránt érdeklődők)"
+    />
+    <input
+      class="input"
+      [ngModel]="location"
+      (ngModelChange)="locationChange.emit($event)"
+      placeholder="Lokáció (pl. Budapest, Debrecen vagy országos)"
+    />
+    <input
+      class="input"
+      [ngModel]="ageRange"
+      (ngModelChange)="ageRangeChange.emit($event)"
+      placeholder="Korosztály (pl. 18-24, 25-34)"
+    />
+  </div>
+
+  <div *ngIf="currentStep === 2" class="step-body">
+    <h3>Platform és cél</h3>
+    <select
+      class="input"
+      [ngModel]="preferredPlatform"
+      (ngModelChange)="platformChange.emit($event)"
+    >
+      <option *ngFor="let option of platformOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select>
+
+    <select class="input" [ngModel]="contentGoal" (ngModelChange)="goalChange.emit($event)">
+      <option *ngFor="let option of goalOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select>
+  </div>
+
+  <div *ngIf="currentStep === 3" class="step-body">
+    <h3>Márkahang</h3>
+    <select class="input" [ngModel]="brandTone" (ngModelChange)="brandToneChange.emit($event)">
+      <option *ngFor="let option of toneOptions" [value]="option.value">
+        {{ option.label }}
+      </option>
+    </select>
+
+    <p class="muted summary-title">Ellenőrzés mentés előtt:</p>
+    <ul class="summary-list">
+      <li><strong>Üzletág:</strong> {{ industry || '-' }}</li>
+      <li><strong>Célközönség:</strong> {{ targetAudience || '-' }}</li>
+      <li><strong>Lokáció:</strong> {{ location || '-' }}</li>
+      <li><strong>Korosztály:</strong> {{ ageRange || '-' }}</li>
+      <li><strong>Platform:</strong> {{ preferredPlatform }}</li>
+      <li><strong>Fókusz:</strong> {{ contentGoal }}</li>
+      <li><strong>Hang:</strong> {{ brandTone }}</li>
+    </ul>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn secondary" type="button" (click)="goBack()" [disabled]="currentStep === 1 || loading">
+      Vissza
+    </button>
+
+    <button
+      *ngIf="currentStep < totalSteps"
+      class="btn"
+      type="button"
+      (click)="goNext()"
+      [disabled]="loading || !canMoveToNextStep()"
+    >
+      Tovább
+    </button>
+
+    <button
+      *ngIf="currentStep === totalSteps"
+      class="btn save-btn"
+      type="button"
+      (click)="onSubmit()"
+      [disabled]="loading || !isFormValid()"
+    >
+      {{ loading ? 'Mentes...' : 'Mentés és továbblépés' }}
+    </button>
+  </div>
 
   <p *ngIf="error" class="error">{{ error }}</p>
 </div>

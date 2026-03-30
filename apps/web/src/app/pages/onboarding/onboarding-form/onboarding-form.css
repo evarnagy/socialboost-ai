@@ -5,8 +5,68 @@
   margin-top: 16px;
 }
 
-.save-btn {
+.wizard-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-chip {
+  display: inline-block;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2937;
+  background: #e5e7eb;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: #3b82f6;
+  transition: width 180ms ease;
+}
+
+.step-body h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-title {
+  margin: 6px 0 0;
+}
+
+.summary-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #1f2937;
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
   margin-top: 8px;
+}
+
+.save-btn {
+  margin-left: auto;
 }
 
 .error {

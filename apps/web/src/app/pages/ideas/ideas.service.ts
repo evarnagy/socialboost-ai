@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ContentGoal, SocialPlatform } from '../../services/profile.service';
 
 export type Idea = { id: string; text: string };
 
@@ -6,7 +7,14 @@ export type Idea = { id: string; text: string };
 export class IdeasService {
   private apiBase = 'http://localhost:8080';
 
-  async generate(industry: string, targetAudience: string): Promise<Idea[]> {
+  async generate(
+    industry: string,
+    targetAudience: string,
+    location: string,
+    ageRange: string,
+    platform: SocialPlatform,
+    contentGoal: ContentGoal
+  ): Promise<Idea[]> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
 
@@ -14,7 +22,16 @@ export class IdeasService {
     const res = await fetch(`${this.apiBase}/generate-ideas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ industry, targetAudience, count: 3, language: 'hu' }),
+      body: JSON.stringify({
+        industry,
+        targetAudience,
+        location,
+        ageRange,
+        platform,
+        contentGoal,
+        count: 3,
+        language: 'hu',
+      }),
       signal: controller.signal,
     });
 
@@ -43,6 +60,10 @@ export class IdeasService {
   async generatePost(
     industry: string,
     targetAudience: string,
+    location: string,
+    ageRange: string,
+    platform: SocialPlatform,
+    contentGoal: ContentGoal,
     tone: 'friendly' | 'expert' | 'premium'
   ): Promise<StructuredPost> {
     const res = await fetch(`${this.apiBase}/generate-post`, {
@@ -51,6 +72,10 @@ export class IdeasService {
       body: JSON.stringify({
         industry,
         targetAudience,
+        location,
+        ageRange,
+        platform,
+        contentGoal,
         tone,
         language: 'hu',
       }),

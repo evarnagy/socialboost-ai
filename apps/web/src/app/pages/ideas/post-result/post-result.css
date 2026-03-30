@@ -3,6 +3,23 @@
   border-left: 5px solid #007bff;
 }
 
+.preview-block {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.limit-list {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.limit-over {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
 .post-section {
   margin-bottom: 12px;
 }

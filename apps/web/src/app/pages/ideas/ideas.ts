@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FavoritesService } from '../../services/favorites.service';
 import { StructuredPost, IdeasService, Idea } from './ideas.service';
-import { ProfileService, BusinessProfile } from '../../services/profile.service';
+import { ProfileService, SocialPlatform, ContentGoal } from '../../services/profile.service';
 import { IdeasHeader } from './ideas-header/ideas-header';
 import { ProfileMissing } from './profile-missing/profile-missing';
 import { IdeaForm } from './idea-form/idea-form';
@@ -36,6 +36,10 @@ export class Ideas {
   // Form mezők
   industry = '';
   targetAudience = '';
+  location = '';
+  ageRange = '';
+  preferredPlatform: SocialPlatform = 'instagram';
+  contentGoal: ContentGoal = 'engagement';
 
   // Ötletek
   ideas: Idea[] = [];
@@ -65,6 +69,11 @@ export class Ideas {
       this.hasProfile = true;
       this.industry = profile.industry ?? '';
       this.targetAudience = profile.targetAudience ?? '';
+      this.location = profile.location ?? '';
+      this.ageRange = profile.ageRange ?? '';
+      this.preferredPlatform = profile.preferredPlatform ?? 'instagram';
+      this.contentGoal = profile.contentGoal ?? 'engagement';
+      this.tone = profile.brandTone ?? 'friendly';
       this.cdr.detectChanges();
     } catch (e: any) {
       this.profileLoaded = true;
@@ -84,7 +93,14 @@ export class Ideas {
     this.cdr.detectChanges();
 
     try {
-      this.ideas = await this.ideasService.generate(this.industry, this.targetAudience);
+      this.ideas = await this.ideasService.generate(
+        this.industry,
+        this.targetAudience,
+        this.location,
+        this.ageRange,
+        this.preferredPlatform,
+        this.contentGoal
+      );
     } catch (e: any) {
       this.error = e?.message ?? 'Ismeretlen hiba';
     } finally {
@@ -103,6 +119,10 @@ export class Ideas {
     this.post = await this.ideasService.generatePost(
       this.industry,
       this.targetAudience,
+      this.location,
+      this.ageRange,
+      this.preferredPlatform,
+      this.contentGoal,
       this.tone
     );
   } catch (e: any) {

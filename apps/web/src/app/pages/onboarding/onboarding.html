@@ -3,10 +3,20 @@
   <app-onboarding-form
     [industry]="industry"
     [targetAudience]="targetAudience"
+    [location]="location"
+    [ageRange]="ageRange"
+    [preferredPlatform]="preferredPlatform"
+    [contentGoal]="contentGoal"
+    [brandTone]="brandTone"
     [loading]="loading"
     [error]="error"
     (industryChange)="industry = $event"
     (audienceChange)="targetAudience = $event"
+    (locationChange)="location = $event"
+    (ageRangeChange)="ageRange = $event"
+    (platformChange)="preferredPlatform = $event"
+    (goalChange)="contentGoal = $event"
+    (brandToneChange)="brandTone = $event"
     (save)="onSave()"
   ></app-onboarding-form>
 </div>

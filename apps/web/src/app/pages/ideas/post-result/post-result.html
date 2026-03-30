@@ -1,16 +1,33 @@
 <div *ngIf="post" class="post-result">
+  <div class="post-section preview-block">
+    <strong>Platform-előnézet: {{ preview.label }}</strong>
+    <p class="muted">{{ preview.formatHint }}</p>
+    <p class="muted">A lenti számok javasolt karakterszámok a poszthoz, nem kötelező technikai limitek.</p>
+
+    <ul class="limit-list">
+      <li>
+        Felirat (javasolt max): <span [class.limit-over]="isOverLimit(captionLength, preview.captionLimit)">{{ captionLength }} / {{ preview.captionLimit }}</span>
+      </li>
+      <li>Hook (javasolt): {{ hookLength }} karakter</li>
+      <li>CTA (javasolt): {{ ctaLength }} karakter</li>
+      <li>Hashtag összesen (javasolt): {{ totalHashtagLength }} karakter</li>
+    </ul>
+
+    <p class="muted">{{ preview.hashtagHint }}</p>
+  </div>
+
   <div class="post-section">
     <strong>Horogszöveg:</strong>
     <p>{{ post.hook }}</p>
   </div>
 
   <div class="post-section">
-    <strong>Felirat:</strong>
+    <strong>Poszt szövege:</strong>
     <p>{{ post.caption }}</p>
   </div>
 
   <div class="post-section">
-    <strong>CTA:</strong>
+    <strong>Call to Action:</strong>
     <button class="btn secondary">
       {{ post.cta }}
     </button>
