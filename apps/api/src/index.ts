@@ -138,17 +138,17 @@ app.post('/generate-post', async (req, res) => {
   const mockPost = {
     hook:
       language === 'hu'
-        ? 'Szeretnel magabiztosabban ragyogni?'
+        ? 'Szeretnél magabiztosabban ragyogni?'
         : 'Want to stand out more confidently?',
     caption:
       language === 'hu'
-        ? `A megfelelo ${industry} megoldas nemcsak szepit, hanem onbizalmat is ad. Megmutatom, hogyan hozhatod ki a legtobbet belole a(z) ${targetAudience} kozonsegnek.`
+        ? `A megfelelő ${industry} megoldás nemcsak szépít, hanem önbizalmat is ad. Megmutatom, hogyan hozhatod ki a legtöbbet belőle a(z) ${targetAudience} közönségnek.`
         : `The right ${industry} approach improves results and confidence. Here is how to make it work for ${targetAudience}.`,
     cta:
-      language === 'hu' ? 'Irj uzenetet idopontert!' : 'Send a message to get started!',
+      language === 'hu' ? 'Írj üzenetet időpontért!' : 'Send a message to get started!',
     hashtags:
       language === 'hu'
-        ? ['#vallalkozas', '#socialmedia', '#onbizalom']
+        ? ['#vállalkozás', '#socialmedia', '#önbizalom']
         : ['#business', '#socialmedia', '#content'],
   };
 
