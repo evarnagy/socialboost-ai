@@ -45,16 +45,19 @@ app.post("/generate-ideas", async (req, res) => {
 
   const { industry, targetAudience, count, language } = parsed.data;
 
-  // 1) kapcsolható: ha nincs kulcs vagy USE_AI!=true, marad mock (0 Ft)
-  const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
-  if (!useAi) {
-    const ideas = Array.from({ length: count }, (_, i) => ({
+  const buildIdeasFallback = (suffixHu: string, suffixEn: string) =>
+    Array.from({ length: count }, (_, i) => ({
       id: String(i + 1),
       text:
         language === "hu"
-          ? `Posztötlet #${i + 1}: ${industry} – ${targetAudience} (minta szöveg)`
-          : `Idea #${i + 1}: ${industry} – ${targetAudience} (sample text)`,
+          ? `Posztötlet #${i + 1}: ${industry} – ${targetAudience} (${suffixHu})`
+          : `Idea #${i + 1}: ${industry} – ${targetAudience} (${suffixEn})`,
     }));
+
+  // 1) kapcsolható: ha nincs kulcs vagy USE_AI!=true, marad mock (0 Ft)
+  const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+  if (!useAi) {
+    const ideas = buildIdeasFallback("minta szoveg", "sample text");
     return res.json({ ideas, source: "mock" });
   }
 
@@ -99,14 +102,8 @@ No extra text.`;
     try {
       json = JSON.parse(raw);
     } catch {
-      // fallback: ha nem tiszta JSON jött, visszaadunk mockot, hogy ne haljon meg a UI
-      const ideas = Array.from({ length: count }, (_, i) => ({
-        id: String(i + 1),
-        text:
-          language === "hu"
-            ? `Posztötlet #${i + 1}: ${industry} – ${targetAudience} (AI válasz nem volt JSON, fallback)`
-            : `Idea #${i + 1}: ${industry} – ${targetAudience} (AI non-JSON fallback)`,
-      }));
+      // fallback: ha nem tiszta JSON jott, ne torjon a UI
+      const ideas = buildIdeasFallback("AI valasz nem volt JSON", "AI non-JSON fallback");
       return res.json({ ideas, source: "fallback" });
     }
 
@@ -118,20 +115,15 @@ No extra text.`;
 
     // ha üres lett, fallback
     if (ideas.length < 3) {
-      const fallback = Array.from({ length: count }, (_, i) => ({
-        id: String(i + 1),
-        text:
-          language === "hu"
-            ? `Posztötlet #${i + 1}: ${industry} – ${targetAudience} (AI fallback)`
-            : `Idea #${i + 1}: ${industry} – ${targetAudience} (AI fallback)`,
-      }));
+      const fallback = buildIdeasFallback("AI fallback", "AI fallback");
       return res.json({ ideas: fallback, source: "fallback" });
     }
 
     return res.json({ ideas, source: "openai", model });
   } catch (err: any) {
     console.error("OPENAI_ERROR:", err?.message ?? err);
-    return res.status(502).json({ error: "AI_ERROR", message: "AI szolgáltatás hiba" });
+    const ideas = buildIdeasFallback("kapcsolati hiba, fallback", "connection issue, fallback");
+    return res.json({ ideas, source: "fallback_connection" });
   }
 });
 
@@ -143,24 +135,29 @@ app.post('/generate-post', async (req, res) => {
 
   const { industry, targetAudience, tone, language } = parsed.data;
 
+  const mockPost = {
+    hook:
+      language === 'hu'
+        ? 'Szeretnel magabiztosabban ragyogni?'
+        : 'Want to stand out more confidently?',
+    caption:
+      language === 'hu'
+        ? `A megfelelo ${industry} megoldas nemcsak szepit, hanem onbizalmat is ad. Megmutatom, hogyan hozhatod ki a legtobbet belole a(z) ${targetAudience} kozonsegnek.`
+        : `The right ${industry} approach improves results and confidence. Here is how to make it work for ${targetAudience}.`,
+    cta:
+      language === 'hu' ? 'Irj uzenetet idopontert!' : 'Send a message to get started!',
+    hashtags:
+      language === 'hu'
+        ? ['#vallalkozas', '#socialmedia', '#onbizalom']
+        : ['#business', '#socialmedia', '#content'],
+  };
+
   const useAi =
     process.env.USE_AI === 'true' && !!process.env.OPENAI_API_KEY;
 
   // 🟡 MOCK (költségmentes)
   if (!useAi) {
-    return res.json({
-      source: 'mock',
-      post: {
-        hook: 'Szeretnél magabiztosabban ragyogni?',
-        caption:
-          'A megfelelő ' +
-          industry +
-          ' kezelés nem csak szépít, hanem önbizalmat is ad. ' +
-          'Megmutatom, hogyan érheted el a legjobb eredményt.',
-        cta: 'Írj üzenetet időpontért!',
-        hashtags: ['#kozmetika', '#szeged', '#önbizalom'],
-      },
-    });
+    return res.json({ source: 'mock', post: mockPost });
   }
 
   try {
@@ -232,15 +229,9 @@ if (!post?.hook || !post?.caption || !post?.cta || !Array.isArray(post?.hashtags
 }
 
 return res.json({ source: 'openai', post });
-
-
-    return res.json({
-      source: 'openai',
-      post,
-    });
   } catch (e: any) {
     console.error('AI ERROR', e?.message);
-    return res.status(502).json({ error: 'AI_ERROR' });
+    return res.json({ source: 'fallback_connection', post: mockPost });
   }
 });
 

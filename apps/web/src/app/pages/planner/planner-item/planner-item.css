@@ -1,16 +1,23 @@
 .plan-item {
   padding: 15px;
   box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
 }
 
 .plan-item strong {
-  color: var(--text-muted);
+  color: var(--brand-700);
   display: block;
-  border-bottom: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--border-soft);
   padding-bottom: 6px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 12px;
 }
 
 .plan-text {
-  margin-top: 6px;
+  margin-top: 8px;
   color: var(--text-main);
+  line-height: 1.5;
 }

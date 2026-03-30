@@ -20,17 +20,18 @@
       </option>
     </select>
 
-    <button class="btn secondary" (click)="onGeneratePost()" [disabled]="loading || !isFormValid()">
-      Konkrét poszt
-    </button>
   </div>
 
+ <button class="btn primary action-btn" (click)="onGeneratePost()" [disabled]="loading || !isFormValid()">
+       {{ loading ? 'Generálok…' : 'Konkrét poszt generálása' }}
+    </button>
+
   <button
-    class="btn primary action-btn"
+    class="btn secondary action-btn"
     (click)="onGenerate()"
     [disabled]="loading || !isFormValid()"
   >
-    {{ loading ? 'Generálok…' : 'Ötletek generálása' }}
+    {{ loading ? 'Generálok…' : 'Posztötletek generálása' }}
   </button>
 
   <p *ngIf="error" class="error error-text">{{ error }}</p>

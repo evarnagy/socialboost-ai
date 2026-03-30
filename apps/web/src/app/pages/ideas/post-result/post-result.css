@@ -1,13 +1,17 @@
 .post-result {
-  padding: 18px;
-  border-left: 5px solid #007bff;
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  box-shadow: var(--shadow-md);
 }
 
 .preview-block {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #f4f8ff;
+  border: 1px solid #d7e3f3;
   border-radius: 12px;
-  padding: 12px;
+  padding: 14px;
 }
 
 .limit-list {
@@ -16,51 +20,43 @@
 }
 
 .limit-over {
-  color: #b91c1c;
+  color: var(--danger-500);
   font-weight: 700;
 }
 
 .post-section {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .post-section p {
-  margin-top: 4px;
+  margin-top: 6px;
   margin-bottom: 0;
-  color: #333;
+  color: var(--text-main);
+  line-height: 1.52;
 }
 
 .post-section strong {
   display: block;
-  color: #000;
-  margin-bottom: 4px;
+  color: var(--text-strong);
+  margin-bottom: 3px;
 }
 
 .hashtag-tag {
   display: inline-block;
-  background-color: #e9ecef;
-  color: #495057;
+  background-color: #edf4ff;
+  color: #204b6e;
   padding: 4px 8px;
   border-radius: 12px;
+  border: 1px solid #d9e6f7;
   margin-right: 6px;
   margin-top: 4px;
-  font-size: 0.8em;
+  font-size: 0.82em;
 }
 
 .post-section.hashtags div {
   margin-top: 6px;
 }
 
-.btn {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #111827;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .btn.secondary {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface-1);
 }
