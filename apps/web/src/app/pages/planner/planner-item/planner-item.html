@@ -1,4 +1,15 @@
-<div class="card plan-item">
-  <strong>{{ item.day }}</strong>
-  <div class="plan-text">{{ item.text }}</div>
+<div class="plan-item">
+  <div class="plan-item__header">
+    <span class="plan-item__day">{{ item.day }}</span>
+    <span class="plan-item__topic">{{ item.topic }}</span>
+  </div>
+
+  <p class="plan-item__hook">{{ item.hook }}</p>
+  <p class="plan-item__caption">{{ item.caption }}</p>
+
+  <div class="plan-item__cta">{{ item.cta }}</div>
+
+  <div class="plan-item__hashtags">
+    <span class="hashtag" *ngFor="let tag of item.hashtags">{{ tag }}</span>
+  </div>
 </div>

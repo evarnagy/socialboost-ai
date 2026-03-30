@@ -1,13 +1,29 @@
-<div class="card login-card">
-  <app-login-header [data]="loginHeaderData"></app-login-header>
-  <app-login-form
-    [email]="email"
-    [password]="password"
-    [loading]="loading"
-    [error]="error"
-    (emailChange)="email = $event"
-    (passwordChange)="password = $event"
-    (login)="onLogin()"
-    (register)="onRegister()"
-  ></app-login-form>
-</div>
+<section class="login-shell page-enter">
+  <div class="login-info card">
+    <p class="eyebrow">SocialBoost AI</p>
+    <h2>Tervezz, generálj, posztolj gyorsabban.</h2>
+    <p class="muted info-lead">
+      Egy helyen kezelheted a posztötleteket, a tartalomtervet és az inspirációs könyvtáradat.
+    </p>
+
+    <ul class="info-list">
+      <li>Okos ötletgenerálás célközönségre szabva</li>
+      <li>Menthető posztok és kedvencek</li>
+      <li>Heti tartalomterv másodpercek alatt</li>
+    </ul>
+  </div>
+
+  <div class="card login-card">
+    <app-login-header [data]="loginHeaderData"></app-login-header>
+    <app-login-form
+      [email]="email"
+      [password]="password"
+      [loading]="loading"
+      [error]="error"
+      (emailChange)="email = $event"
+      (passwordChange)="password = $event"
+      (login)="onLogin()"
+      (register)="onRegister()"
+    ></app-login-form>
+  </div>
+</section>

@@ -15,7 +15,7 @@ const PREVIEW_BY_PLATFORM: Record<SocialPlatform, PlatformPreviewConfig> = {
     label: 'Instagram',
     captionLimit: 2200,
     hashtagHint: 'Ajánlott 5-10 hashtag, kulcsszavak + niche mix.',
-    formatHint: 'övid hook az elején, emoji/sortörés jó olvashatósággal.',
+    formatHint: 'Rövid hook az elején, emoji/sortörés jó olvashatósággal.',
   },
   twitter: {
     label: 'Twitter / X',

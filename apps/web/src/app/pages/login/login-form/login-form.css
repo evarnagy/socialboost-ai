@@ -1,7 +1,7 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   margin-top: 16px;
 }
 
@@ -16,12 +16,12 @@
 }
 
 .primary-action {
-  background: var(--brand-dark);
+  background: linear-gradient(180deg, var(--brand-500), var(--brand-600));
   color: #fff;
 }
 
 .primary-action:hover {
-  background: var(--brand-hover);
+  filter: saturate(1.05);
 }
 
 .login-error {

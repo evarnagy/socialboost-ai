@@ -2,7 +2,7 @@
 
 .heroWrap{
   position: relative;
-  padding: 24px 0;
+  padding: 8px 0 24px;
 }
 
 .heroWrap::before{
@@ -20,25 +20,29 @@
   z-index: 1;
 }
 .card{
-  border: 1px solid #eee;
-  background: rgba(255,255,255,.92);
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  border: 1px solid var(--border-soft);
+  background: var(--surface-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .muted{ color:#6b7280; }
-.lead{ font-size: 15.5px; line-height: 1.55; }
+.lead{
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 66ch;
+}
 
 h1{
-  margin: 12px 0 10px 0;
+  margin: 14px 0 12px;
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-size: 44px;
-  color:#0b0b0d;
+  color: var(--text-strong);
 }
 
 .grad{
-  background: linear-gradient(90deg, #0b0b0d, #6b7280);
+  background: linear-gradient(90deg, var(--brand-700), var(--brand-500), #6f7f93);
   -webkit-background-clip:text;
   background-clip:text;
   color: transparent;
@@ -47,9 +51,9 @@ h1{
 .hero{
   display:grid;
   grid-template-columns: 1.12fr 0.88fr;
-  gap: 16px;
+  gap: 20px;
   align-items: stretch;
-  padding: 18px;
+  padding: 22px;
 }
 
 .heroLeft{ padding: 6px 6px 10px 6px; }
@@ -59,11 +63,11 @@ h1{
   display:inline-flex;
   align-items:center;
   gap: 8px;
-  padding: 7px 10px;
-  border: 1px solid #eee;
+  padding: 8px 12px;
+  border: 1px solid var(--border-soft);
   border-radius: 999px;
   font-size: 13px;
-  background:#fff;
+  background: var(--surface-1);
 }
 
 .spark{ font-size: 14px; }
@@ -83,8 +87,8 @@ h1{
   gap: 14px;
   flex-wrap: wrap;
   margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid #f0f0f0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
 }
 
 /* ---------- mock ---------- */
@@ -96,9 +100,9 @@ h1{
   display:flex;
   align-items:center;
   gap: 7px;
-  padding: 10px 12px;
-  border-bottom: 1px solid #f1f1f1;
-  background: linear-gradient(180deg, rgba(0,0,0,.02), transparent);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(36,90,133,.08), transparent);
 }
 
 .dot{
@@ -125,9 +129,9 @@ h1{
 .mockCta{
   margin-top: 12px;
   padding: 10px 12px;
-  border: 1px dashed #e5e7eb;
+  border: 1px dashed #d4dde9;
   border-radius: 14px;
-  background: #fafafa;
+  background: #f4f8ff;
 }
 
 .mini{ font-size: 12px; margin-bottom: 3px; }
@@ -141,10 +145,10 @@ h1{
 
 .tag{
   padding: 6px 10px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-soft);
   border-radius: 999px;
   font-size: 13px;
-  background:#fff;
+  background: var(--surface-1);
 }
 
 .mockMeta{
@@ -166,7 +170,7 @@ h1{
 
 .how{
   margin-top: 14px;
-  padding: 16px;
+  padding: 20px;
 }
 
 /* ---------- how steps container ---------- */
@@ -193,9 +197,9 @@ h1{
 
 .footerLinks a{
   text-decoration:none;
-  color:#6b7280;
+  color: var(--text-muted);
 }
-.footerLinks a:hover{ color:#111827; }
+.footerLinks a:hover{ color: var(--text-main); }
 
 
 @media (max-width: 980px){
