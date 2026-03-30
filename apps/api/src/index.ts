@@ -4,17 +4,36 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import OpenAI from "openai";
 
-
 dotenv.config();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// --- Schemas ---
+
+const GenerateSchema = z.object({
+  industry: z.string().min(2),
+  targetAudience: z.string().min(2),
+  count: z.number().int().min(3).max(10).default(3),
+  language: z.enum(["hu", "en"]).default("hu"),
+});
 
 const GeneratePostSchema = z.object({
   industry: z.string().min(2),
   targetAudience: z.string().min(2),
-  tone: z.enum(['friendly', 'expert', 'premium']).default('friendly'),
-  language: z.enum(['hu', 'en']).default('hu'),
+  tone: z.enum(["friendly", "expert", "premium"]).default("friendly"),
+  language: z.enum(["hu", "en"]).default("hu"),
 });
+
+const WeeklyPlanSchema = z.object({
+  industry: z.string().min(2),
+  targetAudience: z.string().min(2),
+  location: z.string().optional().default(""),
+  ageRange: z.string().optional().default(""),
+  platform: z.enum(["instagram", "twitter", "linkedin", "facebook"]).optional().default("instagram"),
+  contentGoal: z.enum(["engagement", "lead", "sales", "awareness"]).optional().default("engagement"),
+  tone: z.enum(["friendly", "expert", "premium"]).optional().default("friendly"),
+  language: z.enum(["hu", "en"]).optional().default("hu"),
+});
+
+// --- App setup ---
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -25,16 +44,99 @@ app.use((req, _res, next) => {
   next();
 });
 
+// --- Helpers ---
+
+function stripCodeFence(raw: string): string {
+  return raw
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function extractJsonObject(raw: string): string {
+  const s = stripCodeFence(raw);
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  return start !== -1 && end > start ? s.slice(start, end + 1) : s;
+}
+
+function extractJsonArray(raw: string): string {
+  const s = stripCodeFence(raw);
+  const start = s.indexOf("[");
+  const end = s.lastIndexOf("]");
+  if (start !== -1 && end > start) return s.slice(start, end + 1);
+  const os = s.indexOf("{");
+  const oe = s.lastIndexOf("}");
+  return os !== -1 && oe > os ? s.slice(os, oe + 1) : s;
+}
+
+const DAYS_HU = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
+
+function mockWeeklyPlan(
+  industry: string,
+  targetAudience: string
+): Array<{ day: string; topic: string; hook: string; caption: string; cta: string; hashtags: string[] }> {
+  const days = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
+  const ind = industry.toLowerCase().replace(/\s/g, "_");
+  const templates = [
+    {
+      topic: "Bemutatkozás",
+      hook: `Mit jelent valójában a ${industry} a hétköznapokban?`,
+      caption: `A legtöbben csak a végeredményt látják, pedig a folyamat legalább ilyen fontos. Megmutatom, hogyan segítek a ${targetAudience} közönségnek érthetően és emberközelien.`,
+      cta: "Kövess, ha érdekelnek a gyakorlati tippek.",
+      hashtags: ["#bemutatkozas", "#vallalkozas", `#${ind}`],
+    },
+    {
+      topic: "Hasznos tipp",
+      hook: `3 rövid tipp, amit ma is be tudsz építeni`,
+      caption: `Összegyűjtöttem három egyszerű, mégis hatékony ötletet a ${industry} témájában. Nem bonyolult, viszont látványosan javít a végeredményen.`,
+      cta: "Mentsd el, hogy később is meglegyen.",
+      hashtags: ["#tippek", "#oktatás", `#${ind}`],
+    },
+    {
+      topic: "Mítoszrombolás",
+      hook: `Ezt a tévhitet ideje elengedni a ${industry} kapcsán`,
+      caption: `Sokan azt hiszik, hogy a jó megoldás mindig drága vagy bonyolult. A valóságban a jól felépített, egyszerű lépések működnek igazán.`,
+      cta: "Írd meg kommentben, te mit hallottál erről.",
+      hashtags: ["#mitoszrombolas", "#igazsag", `#${ind}`],
+    },
+    {
+      topic: "Eredménytörténet",
+      hook: `Így lett kézzelfogható eredmény néhány lépésből`,
+      caption: `Egy valós példa arra, hogyan jutottunk el az első ötlettől a mérhető eredményig. A ${targetAudience} célcsoportnál ez a megközelítés kifejezetten jól működött.`,
+      cta: "Ha ilyet szeretnél, írj üzenetet.",
+      hashtags: ["#eredmeny", "#siker", "#esettanulmany"],
+    },
+    {
+      topic: "Kérdezz-felelek",
+      hook: "Ma a ti kérdéseitekre válaszolok",
+      caption: `Jöhet minden, ami ${industry} témában bizonytalan vagy félreérthető. Röviden és érthetően válaszolok, hogy könnyebb legyen dönteni.`,
+      cta: "Tedd fel a kérdésed kommentben.",
+      hashtags: ["#kerdezzfelelek", "#qa", "#kozosseg"],
+    },
+    {
+      topic: "Ügyfélvélemény",
+      hook: "Ezt mondta egy ügyfelem a közös munkáról",
+      caption: `A legjobb visszajelzés mindig az, amikor valaki nyugodtabban, magabiztosabban távozik. Nekem ez jelenti az igazi értéket a ${industry} területén.`,
+      cta: "Nézd meg a többi visszajelzést is.",
+      hashtags: ["#ugyfelvelemeny", "#bizalom", "#ajanlas"],
+    },
+    {
+      topic: "Ajánlat",
+      hook: "Ha halogattad, most érdemes lépni",
+      caption: `Ha a ${targetAudience} célcsoportot szeretnéd megszólítani vagy jobb eredményeket szeretnél, most ideális időzítésben vagy.`,
+      cta: "Írj üzenetet, és nézzük meg együtt a következő lépést.",
+      hashtags: ["#ajanlat", "#idopont", "#most"],
+    },
+  ];
+  return days.map((day, i) => ({ day, ...templates[i]! }));
+}
+
+// --- Routes ---
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "socialboost-api" });
-});
-
-const GenerateSchema = z.object({
-  industry: z.string().min(2),
-  targetAudience: z.string().min(2),
-  count: z.number().int().min(3).max(10).default(3),
-  language: z.enum(["hu", "en"]).default("hu"),
 });
 
 app.post("/generate-ideas", async (req, res) => {
@@ -45,196 +147,197 @@ app.post("/generate-ideas", async (req, res) => {
 
   const { industry, targetAudience, count, language } = parsed.data;
 
-  const buildIdeasFallback = (suffixHu: string, suffixEn: string) =>
+  const buildFallback = () =>
     Array.from({ length: count }, (_, i) => ({
       id: String(i + 1),
-      text:
-        language === "hu"
-          ? `Posztötlet #${i + 1}: ${industry} – ${targetAudience} (${suffixHu})`
-          : `Idea #${i + 1}: ${industry} – ${targetAudience} (${suffixEn})`,
+      text: language === "hu"
+        ? `Posztotlet #${i + 1}: ${industry} - ${targetAudience}`
+        : `Idea #${i + 1}: ${industry} - ${targetAudience}`,
     }));
 
-  // 1) kapcsolható: ha nincs kulcs vagy USE_AI!=true, marad mock (0 Ft)
   const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
   if (!useAi) {
-    const ideas = buildIdeasFallback("minta szoveg", "sample text");
-    return res.json({ ideas, source: "mock" });
+    return res.json({ ideas: buildFallback(), source: "mock" });
   }
 
-  // 2) OpenAI hívás
   try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+    const instructions = language === "hu"
+      ? "Te egy marketing asszisztens vagy magyar kisvallalkozoknak. Rovid, posztolhato otleteket adj."
+      : "You are a marketing assistant. Provide short, post-ready ideas.";
+    const input = language === "hu"
+      ? `Uzletag: ${industry}\nCelkozonseg: ${targetAudience}\n\nAdj ${count} db posztotletet. Valasz formatum: csak tiszta JSON:\n{"ideas":[{"text":"..."}]}\nNincs extra szoveg.`
+      : `Industry: ${industry}\nTarget audience: ${targetAudience}\n\nGive ${count} post ideas. Response: ONLY JSON:\n{"ideas":[{"text":"..."}]}\nNo extra text.`;
 
-    const instructions =
-      language === "hu"
-        ? "Te egy marketing asszisztens vagy magyar kisvállalkozóknak. Rövid, posztolható ötleteket adj."
-        : "You are a marketing assistant. Provide short, post-ready ideas.";
-
-    // Fontos: JSON-t kérünk vissza, hogy stabilan tudjuk parse-olni
-    const input =
-      language === "hu"
-        ? `Üzletág: ${industry}
-Célközönség: ${targetAudience}
-
-Adj ${count} db posztötletet. Válasz formátum: csak tiszta JSON, pontosan így:
-{"ideas":[{"text":"..."}]} 
-Nincs extra szöveg.`
-        : `Industry: ${industry}
-Target audience: ${targetAudience}
-
-Give ${count} post ideas. Response format: ONLY pure JSON exactly:
-{"ideas":[{"text":"..."}]}
-No extra text.`;
-
-    const resp = await openai.responses.create({
-      model,
-      instructions,
-      input,
-      // költségkontroll: rövid output
-      max_output_tokens: 300,
-      temperature: 0.8,
-    });
-
+    const resp = await openai.responses.create({ model, instructions, input, max_output_tokens: 300, temperature: 0.8 });
     const raw = resp.output_text?.trim() || "";
 
-    // 3) Parse + validálás (ha a modell mégis mellébeszélne)
     let json: any;
-    try {
-      json = JSON.parse(raw);
-    } catch {
-      // fallback: ha nem tiszta JSON jott, ne torjon a UI
-      const ideas = buildIdeasFallback("AI valasz nem volt JSON", "AI non-JSON fallback");
-      return res.json({ ideas, source: "fallback" });
-    }
+    try { json = JSON.parse(raw); } catch { return res.json({ ideas: buildFallback(), source: "fallback" }); }
 
     const ideasArr = Array.isArray(json?.ideas) ? json.ideas : [];
-    const ideas = ideasArr.slice(0, count).map((x: any, i: number) => ({
-      id: String(i + 1),
-      text: String(x?.text ?? "").trim(),
-    })).filter((x: any) => x.text.length > 0);
+    const ideas = ideasArr
+      .slice(0, count)
+      .map((x: any, i: number) => ({ id: String(i + 1), text: String(x?.text ?? "").trim() }))
+      .filter((x: any) => x.text.length > 0);
 
-    // ha üres lett, fallback
-    if (ideas.length < 3) {
-      const fallback = buildIdeasFallback("AI fallback", "AI fallback");
-      return res.json({ ideas: fallback, source: "fallback" });
-    }
-
+    if (ideas.length < 3) return res.json({ ideas: buildFallback(), source: "fallback" });
     return res.json({ ideas, source: "openai", model });
   } catch (err: any) {
-    console.error("OPENAI_ERROR:", err?.message ?? err);
-    const ideas = buildIdeasFallback("kapcsolati hiba, fallback", "connection issue, fallback");
-    return res.json({ ideas, source: "fallback_connection" });
+    console.error("GENERATE_IDEAS_ERROR:", err?.message ?? err);
+    return res.json({ ideas: [], source: "fallback_connection" });
   }
 });
 
-app.post('/generate-post', async (req, res) => {
+app.post("/generate-post", async (req, res) => {
   const parsed = GeneratePostSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: 'INVALID_INPUT' });
+    return res.status(400).json({ error: "INVALID_INPUT" });
   }
 
   const { industry, targetAudience, tone, language } = parsed.data;
 
   const mockPost = {
-    hook:
-      language === 'hu'
-        ? 'Szeretnél magabiztosabban ragyogni?'
-        : 'Want to stand out more confidently?',
-    caption:
-      language === 'hu'
-        ? `A megfelelő ${industry} megoldás nemcsak szépít, hanem önbizalmat is ad. Megmutatom, hogyan hozhatod ki a legtöbbet belőle a(z) ${targetAudience} közönségnek.`
-        : `The right ${industry} approach improves results and confidence. Here is how to make it work for ${targetAudience}.`,
-    cta:
-      language === 'hu' ? 'Írj üzenetet időpontért!' : 'Send a message to get started!',
-    hashtags:
-      language === 'hu'
-        ? ['#vállalkozás', '#socialmedia', '#önbizalom']
-        : ['#business', '#socialmedia', '#content'],
+    hook: language === "hu" ? "Szeretel magabiztosabban ragyogni?" : "Want to stand out more confidently?",
+    caption: language === "hu"
+      ? `A megfelelo ${industry} megoldas nemcsak szep�t, hanem onbizalmat is ad. Igy hozhatod ki a legtobbet belole.`
+      : `The right ${industry} approach improves results and confidence for ${targetAudience}.`,
+    cta: language === "hu" ? "Irj uzenetet idopontert!" : "Send a message to get started!",
+    hashtags: language === "hu" ? ["#vallalkozas", "#socialmedia", "#onbizalom"] : ["#business", "#socialmedia", "#content"],
   };
 
-  const useAi =
-    process.env.USE_AI === 'true' && !!process.env.OPENAI_API_KEY;
-
-  // 🟡 MOCK (költségmentes)
-  if (!useAi) {
-    return res.json({ source: 'mock', post: mockPost });
-  }
+  const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+  if (!useAi) return res.json({ source: "mock", post: mockPost });
 
   try {
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+    const toneMap: Record<string, string> = { friendly: "baratsagos, kozvetlen", expert: "szakertoi, magabiztos", premium: "exkluziv, premium" };
 
-    const toneMap: Record<string, string> = {
-      friendly: 'barátságos, közvetlen',
-      expert: 'szakértői, magabiztos',
-      premium: 'exkluzív, prémium',
-    };
+    const prompt = language === "hu"
+      ? `Keszits 1 kozossegi media posztot:\nUzletag: ${industry}\nCelkozonseg: ${targetAudience}\nHangnem: ${toneMap[tone]}\n\nValasz CSAK JSON:\n{"hook":"...","caption":"...","cta":"...","hashtags":["#..."]}`
+      : `Create 1 social media post:\nIndustry: ${industry}\nAudience: ${targetAudience}\nTone: ${tone}\n\nResponse ONLY JSON:\n{"hook":"...","caption":"...","cta":"...","hashtags":["#..."]}`;
 
-    const prompt =
-      language === 'hu'
-        ? `
-Készíts 1 közösségi média posztot a következő struktúrában:
+    const resp = await openai.responses.create({ model, input: prompt, max_output_tokens: 300, temperature: 0.7 });
+    const raw = extractJsonObject(resp.output_text?.trim() ?? "");
 
-HOOK: max 1 rövid mondat, figyelemfelkeltő
-CAPTION: 2–3 rövid mondat
-CTA: 1 cselekvésre ösztönző mondat
-HASHTAGS: 3–5 releváns hashtag
+    let post: any;
+    try { post = JSON.parse(raw); } catch {
+      console.error("GENERATE_POST_BAD_JSON:", resp.output_text?.slice(0, 200));
+      return res.status(502).json({ error: "AI_BAD_JSON" });
+    }
 
-Üzletág: ${industry}
-Célközönség: ${targetAudience}
-Hangnem: ${toneMap[tone]}
+    if (!post?.hook || !post?.caption || !post?.cta || !Array.isArray(post?.hashtags)) {
+      return res.status(502).json({ error: "AI_BAD_SHAPE" });
+    }
 
-Válasz kizárólag JSON formátumban:
-{
-  "hook": "...",
-  "caption": "...",
-  "cta": "...",
-  "hashtags": ["#...", "#..."]
-}
-`
-        : `...`; // angol verzió később
-
-    const resp = await client.responses.create({
-      model,
-      input: prompt,
-      max_output_tokens: 300,
-      temperature: 0.7,
-    });
-
-   const raw0 = resp.output_text?.trim() ?? '';
-
-// 1) ha ```json ... ``` vagy ``` ... ``` formában jön
-const raw1 = raw0
-  .replace(/^```json\s*/i, '')
-  .replace(/^```\s*/i, '')
-  .replace(/```$/i, '')
-  .trim();
-
-// 2) ha még mindig van előtte/utána szöveg, vágjuk ki az első { ... } blokkot
-const start = raw1.indexOf('{');
-const end = raw1.lastIndexOf('}');
-const raw = (start !== -1 && end !== -1 && end > start) ? raw1.slice(start, end + 1) : raw1;
-
-let post: any;
-try {
-  post = JSON.parse(raw);
-} catch {
-  console.error('RAW_OPENAI_TEXT:', raw0);
-  return res.status(502).json({ error: 'AI_BAD_JSON', message: 'AI nem adott érvényes JSON-t.' });
-}
-
-// minimál validálás
-if (!post?.hook || !post?.caption || !post?.cta || !Array.isArray(post?.hashtags)) {
-  return res.status(502).json({ error: 'AI_BAD_SHAPE', message: 'AI JSON formátum hibás.' });
-}
-
-return res.json({ source: 'openai', post });
+    return res.json({ source: "openai", post, model });
   } catch (e: any) {
-    console.error('AI ERROR', e?.message);
-    return res.json({ source: 'fallback_connection', post: mockPost });
+    console.error("GENERATE_POST_ERROR:", e?.message);
+    return res.json({ source: "fallback_connection", post: mockPost });
   }
 });
 
+app.post("/generate-weekly-plan", async (req, res) => {
+  const parsed = WeeklyPlanSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
+  }
+
+  const { industry, targetAudience, location, ageRange, platform, contentGoal, tone, language } = parsed.data;
+
+  const fallback = mockWeeklyPlan(industry, targetAudience);
+
+  const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+  if (!useAi) return res.json({ plan: fallback, source: "mock" });
+
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+
+    const toneMap: Record<string, string> = { friendly: "barátságos, közvetlen", expert: "szakértői, magabiztos", premium: "exkluzív, prémium" };
+    const platformMap: Record<string, string> = { instagram: "Instagram", twitter: "X (Twitter)", linkedin: "LinkedIn", facebook: "Facebook" };
+    const goalMap: Record<string, string> = { engagement: "elköteleződés növelése", lead: "érdeklődők szerzése", sales: "értékesítés", awareness: "ismertség építése" };
+
+    const prompt = `
+Te egy senior magyar social media szövegíró vagy.
+
+Feladat: készíts 7 napos poszttervet természetes, élő, emberi magyar nyelven.
+Kulcskövetelmény: minden szöveg legyen teljesen ékezetes magyar, ne használj "ékezet nélküli" írást.
+
+Adatok:
+- Üzletág: ${industry}
+- Célközönség: ${targetAudience}
+${location ? `- Hely: ${location}\n` : ""}${ageRange ? `- Korosztály: ${ageRange}\n` : ""}- Platform: ${platformMap[platform]}
+- Tartalom célja: ${goalMap[contentGoal]}
+- Hangnem: ${toneMap[tone]}
+
+Stílus:
+- Kerüld a sablonos, robotikus mondatokat.
+- Írj konkrétan, röviden, természetes ritmussal.
+- A hook legyen erős, de ne clickbait.
+- A caption 2-3 mondat, emberi, beszélt nyelvhez közeli.
+- A CTA legyen cselekvésre ösztönző, de ne agresszív.
+
+Napok sorrendben:
+Hétfő, Kedd, Szerda, Csütörtök, Péntek, Szombat, Vasárnap
+
+Válasz kizárólag JSON tömb legyen, pontosan 7 elemmel, ebben a formában:
+[
+  {
+    "day": "Hétfő",
+    "topic": "Rövid téma",
+    "hook": "Figyelemfelkeltő mondat",
+    "caption": "2-3 mondat",
+    "cta": "Rövid CTA",
+    "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3"]
+  }
+]
+
+Ne írj magyarázatot, csak a JSON-t.`.trim();
+
+    const resp = await Promise.race([
+      openai.responses.create({ model, input: prompt, max_output_tokens: 900, temperature: 0.9 }),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("OPENAI_TIMEOUT")), 35000);
+      }),
+    ]);
+    const raw = extractJsonArray(resp.output_text?.trim() ?? "");
+
+    let parsedPlan: any[];
+    try {
+      const p = JSON.parse(raw);
+      parsedPlan = Array.isArray(p) ? p : Array.isArray(p?.plan) ? p.plan : [];
+    } catch {
+      console.error("WEEKLY_PLAN_BAD_JSON:", resp.output_text?.slice(0, 300));
+      return res.json({ plan: fallback, source: "fallback_json" });
+    }
+
+    if (parsedPlan.length < 7) {
+      return res.json({ plan: fallback, source: "fallback_short" });
+    }
+
+    const plan = DAYS_HU.map((day, i) => {
+      const item = parsedPlan[i] ?? {};
+      return {
+        day,
+        topic: String(item.topic ?? "").trim() || fallback[i]!.topic,
+        hook: String(item.hook ?? "").trim() || fallback[i]!.hook,
+        caption: String(item.caption ?? "").trim() || fallback[i]!.caption,
+        cta: String(item.cta ?? "").trim() || fallback[i]!.cta,
+        hashtags: Array.isArray(item.hashtags) ? item.hashtags.map(String) : fallback[i]!.hashtags,
+      };
+    });
+
+    return res.json({ plan, source: "openai", model });
+  } catch (e: any) {
+    console.error("WEEKLY_PLAN_ERROR:", e?.message);
+    return res.json({ plan: fallback, source: "fallback_connection" });
+  }
+});
+
+// --- Start ---
 
 const port = process.env.PORT ? Number(process.env.PORT) : 8080;
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));
