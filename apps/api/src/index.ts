@@ -71,6 +71,33 @@ function extractJsonArray(raw: string): string {
   return os !== -1 && oe > os ? s.slice(os, oe + 1) : s;
 }
 
+function parseWeeklyPlanLoose(raw: string): any[] {
+  const cleaned = stripCodeFence(raw);
+  const candidate = extractJsonArray(cleaned);
+
+  try {
+    const parsed = JSON.parse(candidate);
+    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed?.plan)) return parsed.plan;
+  } catch {
+    // Try to salvage complete object blocks if JSON is truncated.
+  }
+
+  const objectBlocks = cleaned.match(/\{[\s\S]*?\}(?=\s*,|\s*\])/g) ?? [];
+  const recovered: any[] = [];
+
+  for (const block of objectBlocks) {
+    try {
+      const item = JSON.parse(block);
+      if (item && typeof item === "object") recovered.push(item);
+    } catch {
+      // ignore malformed blocks
+    }
+  }
+
+  return recovered;
+}
+
 const DAYS_HU = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
 
 function mockWeeklyPlan(
@@ -277,8 +304,9 @@ Stílus:
 - Kerüld a sablonos, robotikus mondatokat.
 - Írj konkrétan, röviden, természetes ritmussal.
 - A hook legyen erős, de ne clickbait.
-- A caption 2-3 mondat, emberi, beszélt nyelvhez közeli.
+- A caption legfeljebb 2 rövid mondat.
 - A CTA legyen cselekvésre ösztönző, de ne agresszív.
+- Törekedj tömör megfogalmazásra, naponként max. ~280 karakter összesen.
 
 Napok sorrendben:
 Hétfő, Kedd, Szerda, Csütörtök, Péntek, Szombat, Vasárnap
@@ -297,24 +325,41 @@ Válasz kizárólag JSON tömb legyen, pontosan 7 elemmel, ebben a formában:
 
 Ne írj magyarázatot, csak a JSON-t.`.trim();
 
+    const compactPrompt = `
+Készíts 7 napos, teljesen ékezetes magyar poszttervet. Röviden írj, ne legyen sablonos.
+
+Adatok:
+- Üzletág: ${industry}
+- Célközönség: ${targetAudience}
+- Platform: ${platformMap[platform]}
+- Cél: ${goalMap[contentGoal]}
+- Hangnem: ${toneMap[tone]}
+
+Kimenet: CSAK JSON tömb, 7 elem, napok sorrendben Hétfő-Vasárnap.
+Minden elem:
+{"day":"Hétfő","topic":"max 4 szó","hook":"max 10 szó","caption":"max 2 mondat","cta":"max 8 szó","hashtags":["#...","#...","#..."]}
+`.trim();
+
     const resp = await Promise.race([
-      openai.responses.create({ model, input: prompt, max_output_tokens: 900, temperature: 0.9 }),
+      openai.responses.create({ model, input: prompt, max_output_tokens: 1200, temperature: 0.85 }),
       new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error("OPENAI_TIMEOUT")), 35000);
       }),
     ]);
-    const raw = extractJsonArray(resp.output_text?.trim() ?? "");
+    let parsedPlan = parseWeeklyPlanLoose(resp.output_text?.trim() ?? "");
 
-    let parsedPlan: any[];
-    try {
-      const p = JSON.parse(raw);
-      parsedPlan = Array.isArray(p) ? p : Array.isArray(p?.plan) ? p.plan : [];
-    } catch {
-      console.error("WEEKLY_PLAN_BAD_JSON:", resp.output_text?.slice(0, 300));
-      return res.json({ plan: fallback, source: "fallback_json" });
+    if (parsedPlan.length < 7) {
+      const retryResp = await Promise.race([
+        openai.responses.create({ model, input: compactPrompt, max_output_tokens: 900, temperature: 0.7 }),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error("OPENAI_TIMEOUT_RETRY")), 25000);
+        }),
+      ]);
+      parsedPlan = parseWeeklyPlanLoose(retryResp.output_text?.trim() ?? "");
     }
 
     if (parsedPlan.length < 7) {
+      console.error("WEEKLY_PLAN_BAD_JSON_OR_SHORT:", (resp.output_text ?? "").slice(0, 220));
       return res.json({ plan: fallback, source: "fallback_short" });
     }
 
