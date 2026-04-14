@@ -1,0 +1,25 @@
+id;S01;S02;S03;S04;S05;S06;S07
+név;Landing oldal;Login oldal;Üzletprofil oldal;Ötlet és poszt generátor oldal;Könyvtár;Heti tervezõ;Home oldal
+cél;A fõoldal amire a felhasználó megérkezik, az app alapvetõ képességeit mutatja be;Az oldal ahol a felhasználó regisztrálhat/bejelentkezthet;a felhasználó kitölti az adatait a posztgeneráláshoz;a felhasználó posztot és posztötleteket tud generálni;a felhasználó az elmentett posztötleteibõl szemezgethet és törölhet;heti posztterv generáló;Fõoldal
+belépési_pont;jelenleg localhost:4200,késõbb hostolt url;bejelentkezés fül a home oldalról;login után ide dob;üzletprofil kitöltése és mentése után ide dob;bal oldali navbarról elérhetõ;a bal oldali navbarról elérhetõ;A fõoldal amire a felhasználó megérkezik, az app alapvetõ képességeit mutatja be
+auth_szükséges;nem;nem;igen;igen;igen;igen;jelenleg localhost:4200,késõbb hostolt url
+fõ_interakciók;Kezdjük gomb a bejelentkezés fülre visz, bejelentkezés gomb is a bejelentkezés fülre;bejelentkezés: a megfelelõ adatok beírása után be lehet jelentkezni, regisztráció pedig beregisztrálni;3 részre osztva ki kell tölteni a saját adatainkat a tovább és a mentés gombra kattintva;"""konkrét poszt generálása"" gomb konkrét posztot generál, ""posztötletek generálása"" posztötletet, generálás után ""mentés a kedvencek közé"" gombbal könyvtárba mentés";"""törlés"" gomb kitörli az ötletet";"""heti terv generálása"" gomb hatására legenerálja a contexthezt kapcsolódó tervet";nem
+adatforrások;home page collection-jeibõl beégetve jönnek az adatok;login_header_ts;elmenti az adatokat firestoreba,l onboarding-form.ts, onboarding-header-data.ts,;POST /generate-post,POST /generate-ideas;firestoreból jönnek;post/generate-weekly-plan;
+validácók;;"Érvénytelen e-mail cím.',
+'A jelszó túl rövid (min. 6 karakter).',
+
+'Nem található ilyen felhasználó.',
+'Hibás jelszó.',
+'Hibás e-mail cím vagy jelszó.',
+
+'Ez az e-mail cím már foglalt.',
+
+'Túl sok próbálkozás. Próbáld újra késõbb.',
+'Hálózati hiba. Ellenõrizd az internetkapcsolatot.',";;failed to fetch, ai bad json, fallback, fallback_response;;failed to fetch, ai bad json, fallback, fallback_response;home page collection-jeibõl beégetve jönnek az adatok
+kezelt_állapotok;sucess;loading/error/success;empty/sucess/error;empty/sucess/error;empty/sucess/error;empty/sucess/error;sucess
+a11y;kontraszt, aria label,billentyûzetes navigáció;kontraszt, aria label,billentyûzetes navigáció;kontraszt, aria label,billentyûzetes navigáció;kontraszt, aria label,billentyûzetes navigáció;kontraszt, aria label,billentyûzetes navigáció;kontraszt, aria label,billentyûzetes navigáció;kontraszt, aria label,billentyûzetes navigáció
+;;;;;;;
+;;;;;;;
+;;;;;;;
+;;;;;;;
+;;;;;;;
