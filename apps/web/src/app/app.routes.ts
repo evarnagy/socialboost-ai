@@ -9,6 +9,7 @@ export const routes: Routes =
   { path: 'ideas', loadComponent: () => import('./pages/ideas/ideas').then(m => m.Ideas), canActivate: [authGuard] },
   { path: 'library', loadComponent: () => import('./pages/library/library').then(m => m.Library), canActivate: [authGuard] },
   { path: 'planner', loadComponent: () => import('./pages/planner/planner').then(m => m.Planner), canActivate: [authGuard] },
+  { path: 'image-gen', loadComponent: () => import('./pages/image-gen/image-gen').then(m => m.ImageGen), canActivate: [authGuard] },
   { path: '', loadComponent: () => import('./pages/home/home').then(m => m.Home) },
   { path: '**', redirectTo: '' },
 

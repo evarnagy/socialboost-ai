@@ -1,0 +1,32 @@
+<div class="form">
+  <div class="profile-info">
+    <div class="profile-field">
+      <span class="field-label">Üzletág</span>
+      <span class="field-value">{{ industry }}</span>
+    </div>
+    <div class="profile-field">
+      <span class="field-label">Célközönség</span>
+      <span class="field-value">{{ targetAudience }}</span>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <select class="input" [(ngModel)]="style" (ngModelChange)="styleChange.emit($event)">
+      <option *ngFor="let opt of styleOptions" [value]="opt.value">{{ opt.label }}</option>
+    </select>
+
+    <select class="input" [(ngModel)]="size" (ngModelChange)="sizeChange.emit($event)">
+      <option *ngFor="let opt of sizeOptions" [value]="opt.value">{{ opt.label }}</option>
+    </select>
+  </div>
+
+  <button
+    class="btn primary action-btn"
+    (click)="onGenerate()"
+    [disabled]="loading || !isFormValid()"
+  >
+    {{ loading ? 'Generálok…' : 'Kép generálása' }}
+  </button>
+
+  <p *ngIf="error" class="error error-text">{{ error }}</p>
+</div>

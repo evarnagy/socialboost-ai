@@ -22,6 +22,15 @@ const GeneratePostSchema = z.object({
   language: z.enum(["hu", "en"]).default("hu"),
 });
 
+const GenerateImageSchema = z.object({
+  industry: z.string().min(2),
+  targetAudience: z.string().min(2),
+  location: z.string().optional().default(""),
+  ageRange: z.string().optional().default(""),
+  style: z.enum(["photorealistic", "illustration", "minimalist", "cinematic"]).default("photorealistic"),
+  size: z.enum(["1024x1024", "1024x1792", "1792x1024"]).default("1024x1024"),
+});
+
 const WeeklyPlanSchema = z.object({
   industry: z.string().min(2),
   targetAudience: z.string().min(2),
@@ -379,6 +388,56 @@ Minden elem:
   } catch (e: any) {
     console.error("WEEKLY_PLAN_ERROR:", e?.message);
     return res.json({ plan: fallback, source: "fallback_connection" });
+  }
+});
+
+app.post("/generate-image", async (req, res) => {
+  const parsed = GenerateImageSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
+  }
+
+  const { industry, targetAudience, location, ageRange, style, size } = parsed.data;
+
+  const styleDescriptions: Record<string, string> = {
+    photorealistic: "photorealistic, high quality photograph",
+    illustration: "digital illustration, vibrant colors, artistic",
+    minimalist: "minimalist design, clean, simple, flat style",
+    cinematic: "cinematic lighting, dramatic, movie-quality composition",
+  };
+
+  const locationPart = location ? `, ${location}` : "";
+  const agePart = ageRange ? `, age ${ageRange}` : "";
+  const fullPrompt = `${styleDescriptions[style]}. Social media marketing image for a ${industry} business targeting ${targetAudience}${locationPart}${agePart}. Professional, visually appealing, suitable for social media post.`;
+
+  const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+  if (!useAi) {
+    return res.json({
+      imageUrl: `https://placehold.co/${size.replace("x", "/")}?text=Mock+Image`,
+      source: "mock",
+    });
+  }
+
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: fullPrompt,
+      n: 1,
+      size: size as "1024x1024" | "1024x1792" | "1792x1024",
+      response_format: "url",
+    });
+
+    const imageUrl = response.data?.[0]?.url;
+
+    if (!imageUrl) {
+      return res.status(502).json({ error: "NO_IMAGE_URL" });
+    }
+
+    return res.json({ imageUrl, source: "openai" });
+  } catch (e: any) {
+    console.error("GENERATE_IMAGE_ERROR:", e?.message);
+    return res.status(502).json({ error: "IMAGE_GEN_FAILED", message: e?.message ?? "Unknown error" });
   }
 });
 

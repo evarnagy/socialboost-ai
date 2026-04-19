@@ -1,0 +1,34 @@
+<!-- BETÖLTÉS -->
+<div *ngIf="!profileLoaded" class="card image-gen-card">
+  <h2>Képgenerálás</h2>
+  <p class="muted">Profil betöltése…</p>
+</div>
+
+<!-- NINCS PROFIL -->
+<app-profile-missing
+  *ngIf="profileLoaded && !hasProfile"
+  [data]="profileMissingData"
+  [error]="error"
+  (createProfile)="goOnboarding()"
+></app-profile-missing>
+
+<!-- VAN PROFIL -->
+<div *ngIf="profileLoaded && hasProfile" class="card image-gen-card">
+  <app-image-gen-header [data]="headerData"></app-image-gen-header>
+
+  <app-image-gen-form
+    [industry]="industry"
+    [targetAudience]="targetAudience"
+    [style]="style"
+    [size]="size"
+    [loading]="loading"
+    [error]="error"
+    (styleChange)="style = $event"
+    (sizeChange)="size = $event"
+    (generate)="onGenerate()"
+  ></app-image-gen-form>
+</div>
+
+<app-image-result
+  [imageUrl]="result?.imageUrl ?? null"
+></app-image-result>

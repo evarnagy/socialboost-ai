@@ -1,0 +1,9 @@
+<div *ngIf="imageUrl" class="image-result">
+  <div class="image-wrap">
+    <img [src]="imageUrl" alt="Generált kép" class="generated-img" />
+  </div>
+
+  <a [href]="imageUrl" target="_blank" rel="noopener noreferrer" class="btn secondary download-btn">
+    Kép megnyitása / letöltése
+  </a>
+</div>

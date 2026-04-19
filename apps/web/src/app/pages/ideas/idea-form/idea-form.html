@@ -1,30 +1,22 @@
 <div class="form">
-  <input
-    class="input"
-    [(ngModel)]="industry"
-    (ngModelChange)="industryChange.emit($event)"
-    placeholder="Üzletág"
-  />
-
-  <input
-    class="input"
-    [(ngModel)]="targetAudience"
-    (ngModelChange)="audienceChange.emit($event)"
-    placeholder="Célközönség"
-  />
-
-  <div class="form-row">
-    <select class="input" [(ngModel)]="tone" (ngModelChange)="toneChange.emit($event)">
-      <option *ngFor="let option of toneOptions" [value]="option.value">
-        {{ option.label }}
-      </option>
-    </select>
-
+  <div class="profile-info">
+    <div class="profile-field">
+      <span class="field-label">Üzletág</span>
+      <span class="field-value">{{ industry }}</span>
+    </div>
+    <div class="profile-field">
+      <span class="field-label">Célközönség</span>
+      <span class="field-value">{{ targetAudience }}</span>
+    </div>
+    <div class="profile-field">
+      <span class="field-label">Hangnem</span>
+      <span class="field-value">{{ toneLabel }}</span>
+    </div>
   </div>
 
- <button class="btn primary action-btn" (click)="onGeneratePost()" [disabled]="loading || !isFormValid()">
-       {{ loading ? 'Generálok…' : 'Konkrét poszt generálása' }}
-    </button>
+  <button class="btn primary action-btn" (click)="onGeneratePost()" [disabled]="loading || !isFormValid()">
+    {{ loading ? 'Generálok…' : 'Konkrét poszt generálása' }}
+  </button>
 
   <button
     class="btn secondary action-btn"

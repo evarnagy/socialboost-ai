@@ -1,0 +1,10 @@
+.image-gen-card {
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 860px) {
+  .image-gen-card {
+    padding: 16px;
+  }
+}

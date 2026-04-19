@@ -1,0 +1,31 @@
+.image-result {
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.image-wrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  background: var(--surface-2);
+  text-align: center;
+}
+
+.generated-img {
+  width: 100%;
+  max-width: 640px;
+  display: block;
+  margin: 0 auto;
+}
+
+.download-btn {
+  align-self: flex-start;
+  text-decoration: none;
+}

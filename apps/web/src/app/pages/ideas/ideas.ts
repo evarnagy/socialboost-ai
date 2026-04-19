@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { FavoritesService } from '../../services/favorites.service';
 import { StructuredPost, IdeasService, Idea } from './ideas.service';
 import { ProfileService, SocialPlatform, ContentGoal } from '../../services/profile.service';
+import { GeneratedContentService } from '../../services/generated-content.service';
 import { IdeasHeader } from './ideas-header/ideas-header';
 import { ProfileMissing } from './profile-missing/profile-missing';
 import { IdeaForm } from './idea-form/idea-form';
@@ -21,6 +22,7 @@ import { ToneType } from './idea-form/idea-form-data';
   styleUrl: './ideas.css',
 })
 export class Ideas {
+
   // Profil állapot
   profileLoaded = false;
   hasProfile = false;
@@ -50,6 +52,7 @@ export class Ideas {
   constructor(
     private ideasService: IdeasService,
     private profileService: ProfileService,
+    private generatedContent: GeneratedContentService,
     private router: Router,
     private favorites: FavoritesService,
     private cdr: ChangeDetectorRef
@@ -74,6 +77,12 @@ export class Ideas {
       this.preferredPlatform = profile.preferredPlatform ?? 'instagram';
       this.contentGoal = profile.contentGoal ?? 'engagement';
       this.tone = profile.brandTone ?? 'friendly';
+      const saved = await this.generatedContent.loadIdeas();
+      if (saved) {
+        this.ideas = saved.ideas ?? [];
+        this.post = saved.post ?? null;
+      }
+      this.profileLoaded = true;
       this.cdr.detectChanges();
     } catch (e: any) {
       this.profileLoaded = true;
@@ -101,6 +110,7 @@ export class Ideas {
         this.preferredPlatform,
         this.contentGoal
       );
+      this.generatedContent.saveIdeas({ ideas: this.ideas, post: this.post });
     } catch (e: any) {
       this.error = e?.message ?? 'Ismeretlen hiba';
     } finally {
@@ -125,6 +135,7 @@ export class Ideas {
       this.contentGoal,
       this.tone
     );
+    this.generatedContent.saveIdeas({ ideas: this.ideas, post: this.post });
   } catch (e: any) {
     this.error = e?.message ?? 'Nem sikerült posztot generálni.';
   } finally {
@@ -151,3 +162,4 @@ export class Ideas {
 }
 
 }
+

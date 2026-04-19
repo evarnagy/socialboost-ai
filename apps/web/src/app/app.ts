@@ -25,6 +25,7 @@ import { signOut } from 'firebase/auth';
           <a routerLink="/ideas" routerLinkActive="active">Ötletek</a>
           <a routerLink="/library" routerLinkActive="active">Könyvtár</a>
           <a routerLink="/planner" routerLinkActive="active">Tervező</a>
+          <a routerLink="/image-gen" routerLinkActive="active">Képgenerálás</a>
           <a routerLink="/onboarding" routerLinkActive="active">Profilom</a>
         </nav>
 
