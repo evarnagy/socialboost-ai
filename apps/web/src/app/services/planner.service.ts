@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ProfileService } from './profile.service';
+import { environment } from '../environment';
 
 export type PlanItem = {
   day: string;
@@ -12,7 +13,7 @@ export type PlanItem = {
 
 @Injectable({ providedIn: 'root' })
 export class PlannerService {
-  private apiBase = 'http://localhost:8080';
+  private apiBase = environment.apiBase;
   private days = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
 
   constructor(private profile: ProfileService) {}

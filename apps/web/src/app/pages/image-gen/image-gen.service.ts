@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ImageStyle, ImageSize } from './image-gen-form/image-gen-form-data';
+import { environment } from '../../environment';
 
 export type GeneratedImage = {
   imageUrl: string;
@@ -7,7 +8,7 @@ export type GeneratedImage = {
 
 @Injectable({ providedIn: 'root' })
 export class ImageGenService {
-  private apiBase = 'http://localhost:8080';
+  private apiBase = environment.apiBase;
 
   async generateImage(
     industry: string,

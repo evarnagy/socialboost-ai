@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ContentGoal, SocialPlatform } from '../../services/profile.service';
+import { environment } from '../../environment';
 
 export type Idea = { id: string; text: string };
 
 @Injectable({ providedIn: 'root' })
 export class IdeasService {
-  private apiBase = 'http://localhost:8080';
+  private apiBase = environment.apiBase;
 
   async generate(
     industry: string,

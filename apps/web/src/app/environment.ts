@@ -1,5 +1,10 @@
+const runtimeApiBase = (globalThis as any).__SOCIALBOOST_API_BASE__ as string | undefined;
+const browserHost = typeof window !== 'undefined' ? window.location.hostname : '';
+const isLocalHost = browserHost === 'localhost' || browserHost === '127.0.0.1';
+
 export const environment = {
   production: false,
+  apiBase: runtimeApiBase?.trim() || (isLocalHost ? 'http://localhost:8080' : '/api'),
   firebase: {
     apiKey: "AIzaSyAfQzyDWQ4Dv7EZNYZ9toZy606bg4mFzsQ",
     authDomain: "socialboost-ai-d44bc.firebaseapp.com",
