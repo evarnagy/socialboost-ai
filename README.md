@@ -1,3 +1,6 @@
+## LATEST RELEASE
+https://socialboost-ai-d44bc.web.app/
+
 # Thesis Application – Source Code
 
 This repository contains the source code of Erik Varnagy’s thesis application.
