@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ImageStyle, ImageSize } from './image-gen-form/image-gen-form-data';
 import { environment } from '../../environment';
+import { AuthService } from '../../services/auth.service';
 
 export type GeneratedImage = {
   imageUrl: string;
@@ -10,6 +11,8 @@ export type GeneratedImage = {
 export class ImageGenService {
   private apiBase = environment.apiBase;
 
+  constructor(private authService: AuthService) {}
+
   async generateImage(
     industry: string,
     targetAudience: string,
@@ -18,9 +21,13 @@ export class ImageGenService {
     style: ImageStyle,
     size: ImageSize
   ): Promise<GeneratedImage> {
+    const idToken = await this.authService.getIdToken();
     const res = await fetch(`${this.apiBase}/generate-image`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
       body: JSON.stringify({ industry, targetAudience, location, ageRange, style, size }),
     });
 

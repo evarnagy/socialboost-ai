@@ -3,8 +3,85 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { z } from "zod";
 import OpenAI from "openai";
+import { initializeApp as initAdminApp, cert, getApps, applicationDefault } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import type { Request, Response, NextFunction } from "express";
 
 dotenv.config();
+
+type AuthedRequest = Request & { userId?: string };
+
+const corsAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? "http://localhost:4200,http://127.0.0.1:4200")
+  .split(",")
+  .map((x) => x.trim())
+  .filter(Boolean);
+
+const corsAllowedSet = new Set(corsAllowedOrigins);
+
+function corsOrigin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void): void {
+  if (!origin) return callback(null, true);
+  if (corsAllowedSet.has(origin)) return callback(null, true);
+  return callback(new Error("CORS_NOT_ALLOWED"), false);
+}
+
+function initFirebaseAdmin(): void {
+  if (getApps().length > 0) return;
+
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (serviceAccountJson) {
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    initAdminApp({ credential: cert(serviceAccount) });
+    return;
+  }
+
+  initAdminApp({ credential: applicationDefault() });
+}
+
+initFirebaseAdmin();
+
+async function requireFirebaseAuth(req: AuthedRequest, res: Response, next: NextFunction): Promise<void> {
+  const authHeader = req.header("authorization") ?? "";
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match) {
+    res.status(401).json({ error: "UNAUTHORIZED", message: "Missing Bearer token" });
+    return;
+  }
+
+  try {
+    const decoded = await getAuth().verifyIdToken(match[1]!, true);
+    req.userId = decoded.uid;
+    next();
+  } catch {
+    res.status(401).json({ error: "UNAUTHORIZED", message: "Invalid Firebase ID token" });
+  }
+}
+
+const aiWindowMs = Number(process.env.AI_RATE_LIMIT_WINDOW_MS ?? 60000);
+const aiMaxRequests = Number(process.env.AI_RATE_LIMIT_MAX ?? 20);
+const aiRateStore = new Map<string, { count: number; windowStart: number }>();
+
+function aiRateLimit(req: AuthedRequest, res: Response, next: NextFunction): void {
+  const key = req.userId ?? req.ip ?? "anonymous";
+  const now = Date.now();
+  const current = aiRateStore.get(key);
+
+  if (!current || now - current.windowStart >= aiWindowMs) {
+    aiRateStore.set(key, { count: 1, windowStart: now });
+    next();
+    return;
+  }
+
+  if (current.count >= aiMaxRequests) {
+    const retryAfterSeconds = Math.ceil((aiWindowMs - (now - current.windowStart)) / 1000);
+    res.setHeader("Retry-After", String(retryAfterSeconds));
+    res.status(429).json({ error: "RATE_LIMITED", message: "Too many AI requests" });
+    return;
+  }
+
+  current.count += 1;
+  aiRateStore.set(key, current);
+  next();
+}
 
 // --- Schemas ---
 
@@ -45,12 +122,20 @@ const WeeklyPlanSchema = z.object({
 // --- App setup ---
 
 const app = express();
-app.use(cors({ origin: true }));
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: "1mb" }));
 
 app.use((req, _res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
+});
+
+app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
+  if (err.message === "CORS_NOT_ALLOWED") {
+    res.status(403).json({ error: "CORS_NOT_ALLOWED" });
+    return;
+  }
+  next(err);
 });
 
 // --- Helpers ---
@@ -175,7 +260,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "socialboost-api" });
 });
 
-app.post("/generate-ideas", async (req, res) => {
+app.post("/generate-ideas", requireFirebaseAuth, aiRateLimit, async (req, res) => {
   const parsed = GenerateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
@@ -226,7 +311,7 @@ app.post("/generate-ideas", async (req, res) => {
   }
 });
 
-app.post("/generate-post", async (req, res) => {
+app.post("/generate-post", requireFirebaseAuth, aiRateLimit, async (req, res) => {
   const parsed = GeneratePostSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "INVALID_INPUT" });
@@ -275,7 +360,7 @@ app.post("/generate-post", async (req, res) => {
   }
 });
 
-app.post("/generate-weekly-plan", async (req, res) => {
+app.post("/generate-weekly-plan", requireFirebaseAuth, aiRateLimit, async (req, res) => {
   const parsed = WeeklyPlanSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
@@ -391,7 +476,7 @@ Minden elem:
   }
 });
 
-app.post("/generate-image", async (req, res) => {
+app.post("/generate-image", requireFirebaseAuth, aiRateLimit, async (req, res) => {
   const parsed = GenerateImageSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });

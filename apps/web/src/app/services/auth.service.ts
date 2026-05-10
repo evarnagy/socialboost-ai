@@ -29,4 +29,12 @@ export class AuthService {
   async logout() {
     await signOut(auth);
   }
+
+  async getIdToken(forceRefresh = false): Promise<string> {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('Nincs bejelentkezett felhasznalo.');
+    }
+    return user.getIdToken(forceRefresh);
+  }
 }

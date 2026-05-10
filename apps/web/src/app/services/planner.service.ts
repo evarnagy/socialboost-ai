@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ProfileService } from './profile.service';
 import { environment } from '../environment';
+import { AuthService } from './auth.service';
 
 export type PlanItem = {
   day: string;
@@ -16,7 +17,10 @@ export class PlannerService {
   private apiBase = environment.apiBase;
   private days = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
 
-  constructor(private profile: ProfileService) {}
+  constructor(
+    private profile: ProfileService,
+    private authService: AuthService
+  ) {}
 
   private buildFallbackPlan(industry: string, targetAudience: string): PlanItem[] {
     const industryTag = industry.toLowerCase().replace(/\s+/g, '_');
@@ -83,9 +87,13 @@ export class PlannerService {
     const timer = setTimeout(() => controller.abort(), 45000);
 
     try {
+      const idToken = await this.authService.getIdToken();
       const res = await fetch(`${this.apiBase}/generate-weekly-plan`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
         body: JSON.stringify({
           industry: p.industry,
           targetAudience: p.targetAudience,
