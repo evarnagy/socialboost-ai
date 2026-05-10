@@ -36,4 +36,4 @@ See [apps/api/.env.example](apps/api/.env.example) for the complete variable lis
 ## Performance note
 Because the backend is hosted on a free-tier platform, the first API request after a longer idle period may be slower (cold start). After the service wakes up, subsequent requests are typically much faster.
 
-Example:
+
