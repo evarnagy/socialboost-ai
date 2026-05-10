@@ -21,13 +21,21 @@ function corsOrigin(origin, callback) {
 function initFirebaseAdmin() {
     if (getApps().length > 0)
         return;
+    const explicitProjectId = process.env.FIREBASE_PROJECT_ID?.trim();
     const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
     if (serviceAccountJson) {
         const serviceAccount = JSON.parse(serviceAccountJson);
-        initAdminApp({ credential: cert(serviceAccount) });
+        const projectId = explicitProjectId || serviceAccount.project_id || serviceAccount.projectId;
+        initAdminApp({
+            credential: cert(serviceAccount),
+            ...(projectId ? { projectId } : {}),
+        });
         return;
     }
-    initAdminApp({ credential: applicationDefault() });
+    initAdminApp({
+        credential: applicationDefault(),
+        ...(explicitProjectId ? { projectId: explicitProjectId } : {}),
+    });
 }
 initFirebaseAdmin();
 async function requireFirebaseAuth(req, res, next) {
@@ -42,7 +50,26 @@ async function requireFirebaseAuth(req, res, next) {
         req.userId = decoded.uid;
         next();
     }
-    catch {
+    catch (error) {
+        const code = typeof error === "object" && error && "code" in error ? String(error.code) : "unknown";
+        const message = typeof error === "object" && error && "message" in error
+            ? String(error.message)
+            : "Unknown Firebase auth error";
+        console.error("FIREBASE_AUTH_VERIFY_ERROR", { code, message });
+        if (code === "app/invalid-credential" ||
+            code === "auth/invalid-credential" ||
+            code === "auth/insufficient-permission" ||
+            code === "auth/internal-error") {
+            res.status(500).json({
+                error: "AUTH_CONFIG_ERROR",
+                message: "Server Firebase Admin configuration error",
+            });
+            return;
+        }
+        if (code === "auth/id-token-expired") {
+            res.status(401).json({ error: "UNAUTHORIZED", message: "Firebase ID token expired" });
+            return;
+        }
         res.status(401).json({ error: "UNAUTHORIZED", message: "Invalid Firebase ID token" });
     }
 }
