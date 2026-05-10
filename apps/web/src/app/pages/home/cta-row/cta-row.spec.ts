@@ -15,7 +15,6 @@ describe('CtaRow', () => {
 
     fixture = TestBed.createComponent(CtaRow);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

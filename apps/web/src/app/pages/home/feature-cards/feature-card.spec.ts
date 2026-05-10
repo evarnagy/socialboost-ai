@@ -12,7 +12,6 @@ describe('FeatureCard', () => {
 
     fixture = TestBed.createComponent(FeatureCard);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

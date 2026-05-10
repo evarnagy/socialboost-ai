@@ -44,8 +44,6 @@ export class IdeasService {
       });
 
       const raw = await res.text();
-      console.log('STATUS:', res.status);
-      console.log('RAW:', raw);
 
       if (!res.ok) throw new Error(`API error ${res.status}: ${raw}`);
 
@@ -93,7 +91,6 @@ export class IdeasService {
     });
 
     const raw = await res.text();
-    console.log('POST RAW:', raw);
 
     if (!res.ok) {
       throw new Error(`API error ${res.status}: ${raw}`);

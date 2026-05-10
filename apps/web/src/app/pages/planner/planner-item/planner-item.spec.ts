@@ -12,7 +12,14 @@ describe('PlannerItem', () => {
 
     fixture = TestBed.createComponent(PlannerItem);
     component = fixture.componentInstance;
-    component.item = { day: 'Hétfő', text: 'Teszt poszt' };
+    component.item = {
+      day: 'Hétfő',
+      topic: 'Teszt téma',
+      hook: 'Teszt hook',
+      caption: 'Teszt caption',
+      cta: 'Teszt CTA',
+      hashtags: ['#teszt'],
+    };
     fixture.detectChanges();
   });
 

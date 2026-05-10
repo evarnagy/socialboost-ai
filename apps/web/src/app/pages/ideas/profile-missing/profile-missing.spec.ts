@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProfileMissing } from './profile-missing';
-import { ProfileMissingData } from './profile-missing-data';
 
 describe('ProfileMissing', () => {
   let component: ProfileMissing;
@@ -14,10 +13,15 @@ describe('ProfileMissing', () => {
 
     fixture = TestBed.createComponent(ProfileMissing);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    component.data = {
+      title: 'Nincs üzletprofilod',
+      description: 'Hozd létre az üzletprofilod, hogy folytatni tudd.',
+      buttonText: 'Üzletprofil létrehozása',
+    };
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 });

@@ -14,7 +14,6 @@ describe('StepItem', () => {
 
     fixture = TestBed.createComponent(StepItem);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

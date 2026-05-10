@@ -12,7 +12,6 @@ describe('StatsItem', () => {
 
     fixture = TestBed.createComponent(StatsItem);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

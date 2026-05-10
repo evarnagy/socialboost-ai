@@ -1,0 +1,471 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { z } from "zod";
+import OpenAI from "openai";
+import { initializeApp as initAdminApp, cert, getApps, applicationDefault } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+dotenv.config();
+const corsAllowedOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? "http://localhost:4200,http://127.0.0.1:4200")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+const corsAllowedSet = new Set(corsAllowedOrigins);
+function corsOrigin(origin, callback) {
+    if (!origin)
+        return callback(null, true);
+    if (corsAllowedSet.has(origin))
+        return callback(null, true);
+    return callback(new Error("CORS_NOT_ALLOWED"), false);
+}
+function initFirebaseAdmin() {
+    if (getApps().length > 0)
+        return;
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (serviceAccountJson) {
+        const serviceAccount = JSON.parse(serviceAccountJson);
+        initAdminApp({ credential: cert(serviceAccount) });
+        return;
+    }
+    initAdminApp({ credential: applicationDefault() });
+}
+initFirebaseAdmin();
+async function requireFirebaseAuth(req, res, next) {
+    const authHeader = req.header("authorization") ?? "";
+    const match = authHeader.match(/^Bearer\s+(.+)$/i);
+    if (!match) {
+        res.status(401).json({ error: "UNAUTHORIZED", message: "Missing Bearer token" });
+        return;
+    }
+    try {
+        const decoded = await getAuth().verifyIdToken(match[1], true);
+        req.userId = decoded.uid;
+        next();
+    }
+    catch {
+        res.status(401).json({ error: "UNAUTHORIZED", message: "Invalid Firebase ID token" });
+    }
+}
+const aiWindowMs = Number(process.env.AI_RATE_LIMIT_WINDOW_MS ?? 60000);
+const aiMaxRequests = Number(process.env.AI_RATE_LIMIT_MAX ?? 20);
+const aiRateStore = new Map();
+function aiRateLimit(req, res, next) {
+    const key = req.userId ?? req.ip ?? "anonymous";
+    const now = Date.now();
+    const current = aiRateStore.get(key);
+    if (!current || now - current.windowStart >= aiWindowMs) {
+        aiRateStore.set(key, { count: 1, windowStart: now });
+        next();
+        return;
+    }
+    if (current.count >= aiMaxRequests) {
+        const retryAfterSeconds = Math.ceil((aiWindowMs - (now - current.windowStart)) / 1000);
+        res.setHeader("Retry-After", String(retryAfterSeconds));
+        res.status(429).json({ error: "RATE_LIMITED", message: "Too many AI requests" });
+        return;
+    }
+    current.count += 1;
+    aiRateStore.set(key, current);
+    next();
+}
+// --- Schemas ---
+const GenerateSchema = z.object({
+    industry: z.string().min(2),
+    targetAudience: z.string().min(2),
+    count: z.number().int().min(3).max(10).default(3),
+    language: z.enum(["hu", "en"]).default("hu"),
+});
+const GeneratePostSchema = z.object({
+    industry: z.string().min(2),
+    targetAudience: z.string().min(2),
+    tone: z.enum(["friendly", "expert", "premium"]).default("friendly"),
+    language: z.enum(["hu", "en"]).default("hu"),
+});
+const GenerateImageSchema = z.object({
+    industry: z.string().min(2),
+    targetAudience: z.string().min(2),
+    location: z.string().optional().default(""),
+    ageRange: z.string().optional().default(""),
+    style: z.enum(["photorealistic", "illustration", "minimalist", "cinematic"]).default("photorealistic"),
+    size: z.enum(["1024x1024", "1024x1792", "1792x1024"]).default("1024x1024"),
+});
+const WeeklyPlanSchema = z.object({
+    industry: z.string().min(2),
+    targetAudience: z.string().min(2),
+    location: z.string().optional().default(""),
+    ageRange: z.string().optional().default(""),
+    platform: z.enum(["instagram", "twitter", "linkedin", "facebook"]).optional().default("instagram"),
+    contentGoal: z.enum(["engagement", "lead", "sales", "awareness"]).optional().default("engagement"),
+    tone: z.enum(["friendly", "expert", "premium"]).optional().default("friendly"),
+    language: z.enum(["hu", "en"]).optional().default("hu"),
+});
+// --- App setup ---
+const app = express();
+app.use(cors({ origin: corsOrigin }));
+app.use(express.json({ limit: "1mb" }));
+app.use((req, _res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+app.use((err, _req, res, next) => {
+    if (err.message === "CORS_NOT_ALLOWED") {
+        res.status(403).json({ error: "CORS_NOT_ALLOWED" });
+        return;
+    }
+    next(err);
+});
+// --- Helpers ---
+function stripCodeFence(raw) {
+    return raw
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/```$/i, "")
+        .trim();
+}
+function extractJsonObject(raw) {
+    const s = stripCodeFence(raw);
+    const start = s.indexOf("{");
+    const end = s.lastIndexOf("}");
+    return start !== -1 && end > start ? s.slice(start, end + 1) : s;
+}
+function extractJsonArray(raw) {
+    const s = stripCodeFence(raw);
+    const start = s.indexOf("[");
+    const end = s.lastIndexOf("]");
+    if (start !== -1 && end > start)
+        return s.slice(start, end + 1);
+    const os = s.indexOf("{");
+    const oe = s.lastIndexOf("}");
+    return os !== -1 && oe > os ? s.slice(os, oe + 1) : s;
+}
+function parseWeeklyPlanLoose(raw) {
+    const cleaned = stripCodeFence(raw);
+    const candidate = extractJsonArray(cleaned);
+    try {
+        const parsed = JSON.parse(candidate);
+        if (Array.isArray(parsed))
+            return parsed;
+        if (Array.isArray(parsed?.plan))
+            return parsed.plan;
+    }
+    catch {
+        // Try to salvage complete object blocks if JSON is truncated.
+    }
+    const objectBlocks = cleaned.match(/\{[\s\S]*?\}(?=\s*,|\s*\])/g) ?? [];
+    const recovered = [];
+    for (const block of objectBlocks) {
+        try {
+            const item = JSON.parse(block);
+            if (item && typeof item === "object")
+                recovered.push(item);
+        }
+        catch {
+            // ignore malformed blocks
+        }
+    }
+    return recovered;
+}
+const DAYS_HU = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
+function mockWeeklyPlan(industry, targetAudience) {
+    const days = ["Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat", "Vasárnap"];
+    const ind = industry.toLowerCase().replace(/\s/g, "_");
+    const templates = [
+        {
+            topic: "Bemutatkozás",
+            hook: `Mit jelent valójában a ${industry} a hétköznapokban?`,
+            caption: `A legtöbben csak a végeredményt látják, pedig a folyamat legalább ilyen fontos. Megmutatom, hogyan segítek a ${targetAudience} közönségnek érthetően és emberközelien.`,
+            cta: "Kövess, ha érdekelnek a gyakorlati tippek.",
+            hashtags: ["#bemutatkozas", "#vallalkozas", `#${ind}`],
+        },
+        {
+            topic: "Hasznos tipp",
+            hook: `3 rövid tipp, amit ma is be tudsz építeni`,
+            caption: `Összegyűjtöttem három egyszerű, mégis hatékony ötletet a ${industry} témájában. Nem bonyolult, viszont látványosan javít a végeredményen.`,
+            cta: "Mentsd el, hogy később is meglegyen.",
+            hashtags: ["#tippek", "#oktatás", `#${ind}`],
+        },
+        {
+            topic: "Mítoszrombolás",
+            hook: `Ezt a tévhitet ideje elengedni a ${industry} kapcsán`,
+            caption: `Sokan azt hiszik, hogy a jó megoldás mindig drága vagy bonyolult. A valóságban a jól felépített, egyszerű lépések működnek igazán.`,
+            cta: "Írd meg kommentben, te mit hallottál erről.",
+            hashtags: ["#mitoszrombolas", "#igazsag", `#${ind}`],
+        },
+        {
+            topic: "Eredménytörténet",
+            hook: `Így lett kézzelfogható eredmény néhány lépésből`,
+            caption: `Egy valós példa arra, hogyan jutottunk el az első ötlettől a mérhető eredményig. A ${targetAudience} célcsoportnál ez a megközelítés kifejezetten jól működött.`,
+            cta: "Ha ilyet szeretnél, írj üzenetet.",
+            hashtags: ["#eredmeny", "#siker", "#esettanulmany"],
+        },
+        {
+            topic: "Kérdezz-felelek",
+            hook: "Ma a ti kérdéseitekre válaszolok",
+            caption: `Jöhet minden, ami ${industry} témában bizonytalan vagy félreérthető. Röviden és érthetően válaszolok, hogy könnyebb legyen dönteni.`,
+            cta: "Tedd fel a kérdésed kommentben.",
+            hashtags: ["#kerdezzfelelek", "#qa", "#kozosseg"],
+        },
+        {
+            topic: "Ügyfélvélemény",
+            hook: "Ezt mondta egy ügyfelem a közös munkáról",
+            caption: `A legjobb visszajelzés mindig az, amikor valaki nyugodtabban, magabiztosabban távozik. Nekem ez jelenti az igazi értéket a ${industry} területén.`,
+            cta: "Nézd meg a többi visszajelzést is.",
+            hashtags: ["#ugyfelvelemeny", "#bizalom", "#ajanlas"],
+        },
+        {
+            topic: "Ajánlat",
+            hook: "Ha halogattad, most érdemes lépni",
+            caption: `Ha a ${targetAudience} célcsoportot szeretnéd megszólítani vagy jobb eredményeket szeretnél, most ideális időzítésben vagy.`,
+            cta: "Írj üzenetet, és nézzük meg együtt a következő lépést.",
+            hashtags: ["#ajanlat", "#idopont", "#most"],
+        },
+    ];
+    return days.map((day, i) => ({ day, ...templates[i] }));
+}
+// --- Routes ---
+app.get("/health", (_req, res) => {
+    res.json({ ok: true, service: "socialboost-api" });
+});
+app.post("/generate-ideas", requireFirebaseAuth, aiRateLimit, async (req, res) => {
+    const parsed = GenerateSchema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
+    }
+    const { industry, targetAudience, count, language } = parsed.data;
+    const buildFallback = () => Array.from({ length: count }, (_, i) => ({
+        id: String(i + 1),
+        text: language === "hu"
+            ? `Posztotlet #${i + 1}: ${industry} - ${targetAudience}`
+            : `Idea #${i + 1}: ${industry} - ${targetAudience}`,
+    }));
+    const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+    if (!useAi) {
+        return res.json({ ideas: buildFallback(), source: "mock" });
+    }
+    try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+        const instructions = language === "hu"
+            ? "Te egy marketing asszisztens vagy magyar kisvallalkozoknak. Rovid, posztolhato otleteket adj."
+            : "You are a marketing assistant. Provide short, post-ready ideas.";
+        const input = language === "hu"
+            ? `Uzletag: ${industry}\nCelkozonseg: ${targetAudience}\n\nAdj ${count} db posztotletet. Valasz formatum: csak tiszta JSON:\n{"ideas":[{"text":"..."}]}\nNincs extra szoveg.`
+            : `Industry: ${industry}\nTarget audience: ${targetAudience}\n\nGive ${count} post ideas. Response: ONLY JSON:\n{"ideas":[{"text":"..."}]}\nNo extra text.`;
+        const resp = await openai.responses.create({ model, instructions, input, max_output_tokens: 300, temperature: 0.8 });
+        const raw = resp.output_text?.trim() || "";
+        let json;
+        try {
+            json = JSON.parse(raw);
+        }
+        catch {
+            return res.json({ ideas: buildFallback(), source: "fallback" });
+        }
+        const ideasArr = Array.isArray(json?.ideas) ? json.ideas : [];
+        const ideas = ideasArr
+            .slice(0, count)
+            .map((x, i) => ({ id: String(i + 1), text: String(x?.text ?? "").trim() }))
+            .filter((x) => x.text.length > 0);
+        if (ideas.length < 3)
+            return res.json({ ideas: buildFallback(), source: "fallback" });
+        return res.json({ ideas, source: "openai", model });
+    }
+    catch (err) {
+        console.error("GENERATE_IDEAS_ERROR:", err?.message ?? err);
+        return res.json({ ideas: [], source: "fallback_connection" });
+    }
+});
+app.post("/generate-post", requireFirebaseAuth, aiRateLimit, async (req, res) => {
+    const parsed = GeneratePostSchema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({ error: "INVALID_INPUT" });
+    }
+    const { industry, targetAudience, tone, language } = parsed.data;
+    const mockPost = {
+        hook: language === "hu" ? "Szeretel magabiztosabban ragyogni?" : "Want to stand out more confidently?",
+        caption: language === "hu"
+            ? `A megfelelo ${industry} megoldas nemcsak szep�t, hanem onbizalmat is ad. Igy hozhatod ki a legtobbet belole.`
+            : `The right ${industry} approach improves results and confidence for ${targetAudience}.`,
+        cta: language === "hu" ? "Irj uzenetet idopontert!" : "Send a message to get started!",
+        hashtags: language === "hu" ? ["#vallalkozas", "#socialmedia", "#onbizalom"] : ["#business", "#socialmedia", "#content"],
+    };
+    const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+    if (!useAi)
+        return res.json({ source: "mock", post: mockPost });
+    try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+        const toneMap = { friendly: "baratsagos, kozvetlen", expert: "szakertoi, magabiztos", premium: "exkluziv, premium" };
+        const prompt = language === "hu"
+            ? `Keszits 1 kozossegi media posztot:\nUzletag: ${industry}\nCelkozonseg: ${targetAudience}\nHangnem: ${toneMap[tone]}\n\nValasz CSAK JSON:\n{"hook":"...","caption":"...","cta":"...","hashtags":["#..."]}`
+            : `Create 1 social media post:\nIndustry: ${industry}\nAudience: ${targetAudience}\nTone: ${tone}\n\nResponse ONLY JSON:\n{"hook":"...","caption":"...","cta":"...","hashtags":["#..."]}`;
+        const resp = await openai.responses.create({ model, input: prompt, max_output_tokens: 300, temperature: 0.7 });
+        const raw = extractJsonObject(resp.output_text?.trim() ?? "");
+        let post;
+        try {
+            post = JSON.parse(raw);
+        }
+        catch {
+            console.error("GENERATE_POST_BAD_JSON:", resp.output_text?.slice(0, 200));
+            return res.status(502).json({ error: "AI_BAD_JSON" });
+        }
+        if (!post?.hook || !post?.caption || !post?.cta || !Array.isArray(post?.hashtags)) {
+            return res.status(502).json({ error: "AI_BAD_SHAPE" });
+        }
+        return res.json({ source: "openai", post, model });
+    }
+    catch (e) {
+        console.error("GENERATE_POST_ERROR:", e?.message);
+        return res.json({ source: "fallback_connection", post: mockPost });
+    }
+});
+app.post("/generate-weekly-plan", requireFirebaseAuth, aiRateLimit, async (req, res) => {
+    const parsed = WeeklyPlanSchema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
+    }
+    const { industry, targetAudience, location, ageRange, platform, contentGoal, tone, language } = parsed.data;
+    const fallback = mockWeeklyPlan(industry, targetAudience);
+    const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+    if (!useAi)
+        return res.json({ plan: fallback, source: "mock" });
+    try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+        const toneMap = { friendly: "barátságos, közvetlen", expert: "szakértői, magabiztos", premium: "exkluzív, prémium" };
+        const platformMap = { instagram: "Instagram", twitter: "X (Twitter)", linkedin: "LinkedIn", facebook: "Facebook" };
+        const goalMap = { engagement: "elköteleződés növelése", lead: "érdeklődők szerzése", sales: "értékesítés", awareness: "ismertség építése" };
+        const prompt = `
+Te egy senior magyar social media szövegíró vagy.
+
+Feladat: készíts 7 napos poszttervet természetes, élő, emberi magyar nyelven.
+Kulcskövetelmény: minden szöveg legyen teljesen ékezetes magyar, ne használj "ékezet nélküli" írást.
+
+Adatok:
+- Üzletág: ${industry}
+- Célközönség: ${targetAudience}
+${location ? `- Hely: ${location}\n` : ""}${ageRange ? `- Korosztály: ${ageRange}\n` : ""}- Platform: ${platformMap[platform]}
+- Tartalom célja: ${goalMap[contentGoal]}
+- Hangnem: ${toneMap[tone]}
+
+Stílus:
+- Kerüld a sablonos, robotikus mondatokat.
+- Írj konkrétan, röviden, természetes ritmussal.
+- A hook legyen erős, de ne clickbait.
+- A caption legfeljebb 2 rövid mondat.
+- A CTA legyen cselekvésre ösztönző, de ne agresszív.
+- Törekedj tömör megfogalmazásra, naponként max. ~280 karakter összesen.
+
+Napok sorrendben:
+Hétfő, Kedd, Szerda, Csütörtök, Péntek, Szombat, Vasárnap
+
+Válasz kizárólag JSON tömb legyen, pontosan 7 elemmel, ebben a formában:
+[
+  {
+    "day": "Hétfő",
+    "topic": "Rövid téma",
+    "hook": "Figyelemfelkeltő mondat",
+    "caption": "2-3 mondat",
+    "cta": "Rövid CTA",
+    "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3"]
+  }
+]
+
+Ne írj magyarázatot, csak a JSON-t.`.trim();
+        const compactPrompt = `
+Készíts 7 napos, teljesen ékezetes magyar poszttervet. Röviden írj, ne legyen sablonos.
+
+Adatok:
+- Üzletág: ${industry}
+- Célközönség: ${targetAudience}
+- Platform: ${platformMap[platform]}
+- Cél: ${goalMap[contentGoal]}
+- Hangnem: ${toneMap[tone]}
+
+Kimenet: CSAK JSON tömb, 7 elem, napok sorrendben Hétfő-Vasárnap.
+Minden elem:
+{"day":"Hétfő","topic":"max 4 szó","hook":"max 10 szó","caption":"max 2 mondat","cta":"max 8 szó","hashtags":["#...","#...","#..."]}
+`.trim();
+        const resp = await Promise.race([
+            openai.responses.create({ model, input: prompt, max_output_tokens: 1200, temperature: 0.85 }),
+            new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("OPENAI_TIMEOUT")), 35000);
+            }),
+        ]);
+        let parsedPlan = parseWeeklyPlanLoose(resp.output_text?.trim() ?? "");
+        if (parsedPlan.length < 7) {
+            const retryResp = await Promise.race([
+                openai.responses.create({ model, input: compactPrompt, max_output_tokens: 900, temperature: 0.7 }),
+                new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error("OPENAI_TIMEOUT_RETRY")), 25000);
+                }),
+            ]);
+            parsedPlan = parseWeeklyPlanLoose(retryResp.output_text?.trim() ?? "");
+        }
+        if (parsedPlan.length < 7) {
+            console.error("WEEKLY_PLAN_BAD_JSON_OR_SHORT:", (resp.output_text ?? "").slice(0, 220));
+            return res.json({ plan: fallback, source: "fallback_short" });
+        }
+        const plan = DAYS_HU.map((day, i) => {
+            const item = parsedPlan[i] ?? {};
+            return {
+                day,
+                topic: String(item.topic ?? "").trim() || fallback[i].topic,
+                hook: String(item.hook ?? "").trim() || fallback[i].hook,
+                caption: String(item.caption ?? "").trim() || fallback[i].caption,
+                cta: String(item.cta ?? "").trim() || fallback[i].cta,
+                hashtags: Array.isArray(item.hashtags) ? item.hashtags.map(String) : fallback[i].hashtags,
+            };
+        });
+        return res.json({ plan, source: "openai", model });
+    }
+    catch (e) {
+        console.error("WEEKLY_PLAN_ERROR:", e?.message);
+        return res.json({ plan: fallback, source: "fallback_connection" });
+    }
+});
+app.post("/generate-image", requireFirebaseAuth, aiRateLimit, async (req, res) => {
+    const parsed = GenerateImageSchema.safeParse(req.body);
+    if (!parsed.success) {
+        return res.status(400).json({ error: "INVALID_INPUT", details: parsed.error.flatten() });
+    }
+    const { industry, targetAudience, location, ageRange, style, size } = parsed.data;
+    const styleDescriptions = {
+        photorealistic: "photorealistic, high quality photograph",
+        illustration: "digital illustration, vibrant colors, artistic",
+        minimalist: "minimalist design, clean, simple, flat style",
+        cinematic: "cinematic lighting, dramatic, movie-quality composition",
+    };
+    const locationPart = location ? `, ${location}` : "";
+    const agePart = ageRange ? `, age ${ageRange}` : "";
+    const fullPrompt = `${styleDescriptions[style]}. Social media marketing image for a ${industry} business targeting ${targetAudience}${locationPart}${agePart}. Professional, visually appealing, suitable for social media post.`;
+    const useAi = process.env.USE_AI === "true" && !!process.env.OPENAI_API_KEY;
+    if (!useAi) {
+        return res.json({
+            imageUrl: `https://placehold.co/${size.replace("x", "/")}?text=Mock+Image`,
+            source: "mock",
+        });
+    }
+    try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const response = await openai.images.generate({
+            model: "dall-e-3",
+            prompt: fullPrompt,
+            n: 1,
+            size: size,
+            response_format: "url",
+        });
+        const imageUrl = response.data?.[0]?.url;
+        if (!imageUrl) {
+            return res.status(502).json({ error: "NO_IMAGE_URL" });
+        }
+        return res.json({ imageUrl, source: "openai" });
+    }
+    catch (e) {
+        console.error("GENERATE_IMAGE_ERROR:", e?.message);
+        return res.status(502).json({ error: "IMAGE_GEN_FAILED", message: e?.message ?? "Unknown error" });
+    }
+});
+// --- Start ---
+const port = process.env.PORT ? Number(process.env.PORT) : 8080;
+app.listen(port, () => console.log(`API running on http://localhost:${port}`));
+//# sourceMappingURL=index.js.map

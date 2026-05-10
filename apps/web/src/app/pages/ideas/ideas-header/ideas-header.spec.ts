@@ -14,10 +14,14 @@ describe('IdeasHeader', () => {
 
     fixture = TestBed.createComponent(IdeasHeader);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    component.data = {
+      title: 'Test Title',
+      description: 'Test Description',
+    };
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 

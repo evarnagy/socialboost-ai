@@ -12,7 +12,6 @@ describe('TrustItem', () => {
 
     fixture = TestBed.createComponent(TrustItem);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

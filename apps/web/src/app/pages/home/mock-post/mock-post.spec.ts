@@ -12,7 +12,6 @@ describe('MockPost', () => {
 
     fixture = TestBed.createComponent(MockPost);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

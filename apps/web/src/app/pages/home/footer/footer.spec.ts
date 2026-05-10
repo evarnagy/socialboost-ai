@@ -15,10 +15,14 @@ describe('Footer', () => {
 
     fixture = TestBed.createComponent(Footer);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    component.data = {
+      copyright: 'Test Copyright',
+      links: [{ text: 'Link1', route: '/link1' }],
+    };
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
