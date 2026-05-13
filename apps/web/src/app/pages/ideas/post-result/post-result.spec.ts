@@ -46,7 +46,7 @@ describe('PostResult', () => {
     fixture.detectChanges();
 
     const tags = Array.from(fixture.nativeElement.querySelectorAll('.hashtag-tag'))
-      .map((el) => (el.textContent ?? '').trim());
+      .map((el) => ((el as HTMLElement).textContent ?? '').trim());
 
     expect(tags).toEqual(['#KavezoElet', '#Brunch', '#reggeli']);
   });
