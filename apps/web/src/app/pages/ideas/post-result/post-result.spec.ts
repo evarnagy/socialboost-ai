@@ -34,4 +34,20 @@ describe('PostResult', () => {
     expect(compiled.querySelector('.post-result')?.textContent).toContain('Test hook');
     expect(compiled.querySelectorAll('.hashtag-tag').length).toBe(2);
   });
+
+  it('should render hashtags with exactly one leading #', () => {
+    const testPost: StructuredPost = {
+      hook: 'Test hook',
+      caption: 'Test caption',
+      cta: 'Test CTA',
+      hashtags: ['#KavezoElet', '##Brunch', ' reggeli ', ''],
+    };
+    component.post = testPost;
+    fixture.detectChanges();
+
+    const tags = Array.from(fixture.nativeElement.querySelectorAll('.hashtag-tag'))
+      .map((el) => (el.textContent ?? '').trim());
+
+    expect(tags).toEqual(['#KavezoElet', '#Brunch', '#reggeli']);
+  });
 });

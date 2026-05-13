@@ -48,6 +48,12 @@ export class PostResult {
   @Input() post: StructuredPost | null = null;
   @Input() platform: SocialPlatform = 'instagram';
 
+  get displayHashtags(): string[] {
+    return (this.post?.hashtags ?? [])
+      .map((tag) => this.normalizeHashtag(tag))
+      .filter((tag) => tag.length > 1);
+  }
+
   get preview(): PlatformPreviewConfig {
     return PREVIEW_BY_PLATFORM[this.platform] ?? PREVIEW_BY_PLATFORM.instagram;
   }
@@ -65,7 +71,14 @@ export class PostResult {
   }
 
   get totalHashtagLength(): number {
-    return (this.post?.hashtags ?? []).join(' ').length;
+    return this.displayHashtags.join(' ').length;
+  }
+
+  private normalizeHashtag(tag: string): string {
+    const trimmed = (tag ?? '').trim();
+    if (!trimmed) return '';
+
+    return `#${trimmed.replace(/^#+/, '')}`;
   }
 
   isOverLimit(value: number, limit: number): boolean {

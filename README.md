@@ -49,6 +49,9 @@ Required/important keys:
 - AI_RATE_LIMIT_MAX
 - FIREBASE_SERVICE_ACCOUNT_JSON (single-line JSON) OR GOOGLE_APPLICATION_CREDENTIALS
 
+Production CORS allowlist example:
+- CORS_ALLOWED_ORIGINS=https://socialboost-ai-d44bc.web.app,https://socialboost-ai-d44bc.firebaseapp.com
+
 ### Frontend runtime API base
 Frontend uses:
 - runtime override: window.__SOCIALBOOST_API_BASE__
