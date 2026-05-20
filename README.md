@@ -109,7 +109,7 @@ Recommended validation flow:
 
 ## Quality status (finalization pass)
 - Frontend build: OK
-- Frontend unit tests: OK (34 files, 48 tests)
+- Frontend unit tests: OK (34 files, 49 tests)
 - API build: OK
 - API test script: OK (typecheck-based)
 
