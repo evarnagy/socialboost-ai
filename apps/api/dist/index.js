@@ -479,7 +479,6 @@ app.post("/generate-image", requireFirebaseAuth, aiRateLimit, async (req, res) =
             prompt: fullPrompt,
             n: 1,
             size: size,
-            response_format: "url",
         });
         const imageUrl = response.data?.[0]?.url;
         if (!imageUrl) {

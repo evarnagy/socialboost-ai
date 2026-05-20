@@ -544,7 +544,6 @@ app.post("/generate-image", requireFirebaseAuth, aiRateLimit, async (req, res) =
       prompt: fullPrompt,
       n: 1,
       size: size as "1024x1024" | "1024x1792" | "1792x1024",
-      response_format: "url",
     });
 
     const imageUrl = response.data?.[0]?.url;
