@@ -44,10 +44,15 @@ Required/important keys:
 - USE_AI
 - OPENAI_API_KEY
 - OPENAI_MODEL
+- OPENAI_IMAGE_MODEL
 - CORS_ALLOWED_ORIGINS
 - AI_RATE_LIMIT_WINDOW_MS
 - AI_RATE_LIMIT_MAX
 - FIREBASE_SERVICE_ACCOUNT_JSON (single-line JSON) OR GOOGLE_APPLICATION_CREDENTIALS
+
+Model split:
+- OPENAI_MODEL is used for text generation endpoints such as ideas, posts, and weekly plans.
+- OPENAI_IMAGE_MODEL is used only for /generate-image. The default is gpt-image-2.
 
 Production CORS allowlist example:
 - CORS_ALLOWED_ORIGINS=https://socialboost-ai-d44bc.web.app,https://socialboost-ai-d44bc.firebaseapp.com

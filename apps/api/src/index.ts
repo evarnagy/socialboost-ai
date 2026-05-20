@@ -539,14 +539,16 @@ app.post("/generate-image", requireFirebaseAuth, aiRateLimit, async (req, res) =
 
   try {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const imageModel = process.env.OPENAI_IMAGE_MODEL || "gpt-image-2";
     const response = await openai.images.generate({
-      model: "dall-e-3",
+      model: imageModel,
       prompt: fullPrompt,
       n: 1,
       size: size as "1024x1024" | "1024x1792" | "1792x1024",
     });
 
-    const imageUrl = response.data?.[0]?.url;
+    const imageData = response.data?.[0];
+    const imageUrl = imageData?.url ?? (imageData?.b64_json ? `data:image/png;base64,${imageData.b64_json}` : undefined);
 
     if (!imageUrl) {
       return res.status(502).json({ error: "NO_IMAGE_URL" });
